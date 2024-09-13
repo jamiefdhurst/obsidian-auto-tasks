@@ -1,8 +1,6 @@
 import esbuild from 'esbuild';
-import sveltePlugin from 'esbuild-svelte';
 import process from 'process';
 import builtins from 'builtin-modules';
-import { sveltePreprocess } from 'svelte-preprocess';
 
 const banner =
 `/*
@@ -39,11 +37,7 @@ const context = await esbuild.context({
   logLevel: 'info',
   sourcemap: prod ? false : 'inline',
   treeShaking: true,
-  mainFields: ['svelte', 'module', 'main'],
-  conditions: ['svelte'],
-  plugins: [sveltePlugin({
-    preprocess: sveltePreprocess(),
-  })],
+  mainFields: ['module', 'main'],
   outfile: 'main.js',
 });
 

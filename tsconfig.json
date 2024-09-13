@@ -1,8 +1,6 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "inlineSources": true,
     "module": "ESNext",
     "target": "ES6",
     "noImplicitAny": true,
@@ -16,9 +14,9 @@
       "ES6",
       "ES7"
     ],
-    "types": ["jest", "node", "svelte"]
+    "types": ["jest", "node"]
   },
   "include": [
-    "**/*.ts"
+    "src/**/*.ts"
   ]
 }
