@@ -1,15 +1,18 @@
 import { Notice, Plugin, type PluginManifest } from 'obsidian';
 import { SETTINGS_UPDATED } from './events';
 import { PERIODIC_NOTES_EVENT_SETTING_UPDATED, PeriodicNotes } from './periodic-notes';
-import { applyDefaultSettings, type ISettings } from './settings';
-import type { ObsidianApp, ObsidianWorkspace } from './types';
-import { AutoTasksSettingsTab } from './settings/SettingsTab';
+import { applyDefaultSettings, AutoTasksSettingsTab, type ISettings } from './settings';
 import { Tasks } from './tasks';
+import type { ObsidianApp, ObsidianWorkspace } from './types';
+import { TasksManager } from './tasks/tasks-manager';
+import { TasksParser } from './tasks/tasks-parser';
 
 export default class AutoTasks extends Plugin {
   public settings: ISettings;
   private periodicNotes: PeriodicNotes;
   private tasks: Tasks;
+  private tasksManager: TasksManager;
+  private tasksParser: TasksParser;
 
   constructor(app: ObsidianApp, manifest: PluginManifest) {
     super(app, manifest);
@@ -17,6 +20,7 @@ export default class AutoTasks extends Plugin {
     this.settings = {} as ISettings;
     this.periodicNotes = new PeriodicNotes(app);
     this.tasks = new Tasks(app);
+    this.tasksManager = new TasksManager(app.vault, new TasksParser());
   }
   
   async onload(): Promise<void> {
@@ -48,6 +52,11 @@ export default class AutoTasks extends Plugin {
     const workspace: ObsidianWorkspace = this.app.workspace;
     this.registerEvent(workspace.on(PERIODIC_NOTES_EVENT_SETTING_UPDATED, this.syncPeriodicNotesSettings.bind(this)));
     this.syncPeriodicNotesSettings();
+
+    // Watch for Vault file creations
+    this.registerEvent(this.app.vault.on('create', (file) => {
+      this.tasksManager.checkAndCopyTasks(this.settings, file);
+    }));
 
     // Add the settings tab
     this.addSettingTab(new AutoTasksSettingsTab(this.app, this));

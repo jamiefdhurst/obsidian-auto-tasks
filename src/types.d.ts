@@ -1,4 +1,4 @@
-import { App, Plugin, Workspace } from 'obsidian';
+import { App, EventRef, Plugin, Vault, Workspace } from 'obsidian';
 
 export class PluginSettingTab {}
 
