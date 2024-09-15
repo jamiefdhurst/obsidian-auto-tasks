@@ -1,7 +1,42 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import type AutoTasks from '..';
-import type { IPeriodicity, ISettings } from '.';
+import AutoTasks from 'src';
 import { capitalise } from 'src/utils';
+
+export type IPeriodicity = 
+  | 'daily'
+  | 'weekly';
+
+export interface IPeriodicitySettings {
+  available: boolean;
+  carryOver: boolean;
+  setDueDate: boolean;
+}
+
+export interface ISettings {
+  daily: IPeriodicitySettings;
+  weekly: IPeriodicitySettings;
+}
+
+export const DEFAULT_SETTINGS: ISettings = Object.freeze({
+  daily: { 
+    available: false,
+    carryOver: false,
+    setDueDate: false,
+  },
+  weekly: {
+    available: false,
+    carryOver: false,
+    setDueDate: false,
+  },
+});
+
+export function applyDefaultSettings(savedSettings: ISettings): ISettings {
+  return Object.assign(
+    {},
+    DEFAULT_SETTINGS,
+    savedSettings
+  );
+}
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
   public plugin: AutoTasks;
@@ -58,3 +93,4 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
     }
   }
 }
+
