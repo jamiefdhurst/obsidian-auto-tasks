@@ -25,7 +25,7 @@ export class TasksManager {
       
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
-      const tasks: string[] = this.parser.extractAllTasks(previousEntryContents);
+      const tasks: string[] = this.parser.extractAllTasks(previousEntryContents, setting.searchHeaders);
       let incompleteTasks: string[] = tasks.filter(task => !this.parser.isComplete(task));
 
       if (setting.setDueDate) {
@@ -37,7 +37,7 @@ export class TasksManager {
       const newEntryContents: string = await this.vault.read(newEntry);
 
       // Save and refresh any views
-      await this.vault.modify(newEntry, `${newEntryContents}\n\n## TODO\n\n${incompleteTasks.join('\n')}`);
+      await this.vault.modify(newEntry, `${newEntryContents}\n\n${setting.header}\n\n${incompleteTasks.join('\n')}`);
     }
   }
 }

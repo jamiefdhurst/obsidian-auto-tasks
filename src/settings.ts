@@ -10,6 +10,8 @@ export interface IPeriodicitySettings {
   available: boolean;
   carryOver: boolean;
   setDueDate: boolean;
+  header: string;
+  searchHeaders: string[];
 }
 
 export interface ISettings {
@@ -22,11 +24,15 @@ export const DEFAULT_SETTINGS: ISettings = Object.freeze({
     available: false,
     carryOver: false,
     setDueDate: false,
+    header: '## TODOs',
+    searchHeaders: [],
   },
   weekly: {
     available: false,
     carryOver: false,
     setDueDate: false,
+    header: '## TODOs',
+    searchHeaders: [],
   },
 });
 
@@ -86,6 +92,28 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
               .setValue(settings[periodicity].setDueDate)
               .onChange(async (val) => {
                 settings[periodicity].setDueDate = val;
+                await this.plugin.updateSettings(settings);
+              });
+          });
+        new Setting(this.containerEl)
+          .setName(`${capitalise(periodicity)} tasks header`)
+          .setDesc('Set the header to be added to the top of the tasks section within new notes - include any markdown to set the heading style.')
+          .addText((text) => {
+            text
+              .setValue(settings[periodicity].header)
+              .onChange(async (val) => {
+                settings[periodicity].header = val;
+                await this.plugin.updateSettings(settings);
+              });
+          });
+        new Setting(this.containerEl)
+          .setName('Heading(s) to search for tasks')
+          .setDesc('Comma-separated list of headings within the notes to search and include any carry over tasks from. Leave this blank to search the entire note.')
+          .addText((text) => {
+            text
+              .setValue(settings[periodicity].searchHeaders ? settings[periodicity].searchHeaders.join(',') : '')
+              .onChange(async (val) => {
+                settings[periodicity].searchHeaders = val.split(',');
                 await this.plugin.updateSettings(settings);
               });
           });
