@@ -1,5 +1,5 @@
 import type { Plugin } from 'obsidian';
-import type { ObsidianAppWithPlugins } from './types';
+import type { ObsidianAppWithPlugins } from '../types';
 
 export const TASKS_NAME: string = 'obsidian-tasks-plugin';
 
@@ -12,11 +12,7 @@ export class Tasks {
     this.app = app;
   }
 
-  isTasksNotesPluginEnabled(): boolean {
+  isTasksPluginEnabled(): boolean {
     return this.app.plugins.enabledPlugins.has(TASKS_NAME);
-  }
-
-  private getTasksPlugin(): ITasksPlugin {
-    return this.app.plugins.getPlugin(TASKS_NAME) as ITasksPlugin;
   }
 }

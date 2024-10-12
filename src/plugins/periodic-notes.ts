@@ -1,6 +1,6 @@
 import type { Plugin } from 'obsidian';
-import type { ISettings } from './settings';
-import type { ObsidianAppWithPlugins } from './types';
+import type { ISettings } from '../settings';
+import type { ObsidianAppWithPlugins } from '../types';
 
 export const PERIODIC_NOTES_NAME: string = 'periodic-notes';
 export const PERIODIC_NOTES_EVENT_SETTING_UPDATED: string = 'periodic-notes:settings-updated';

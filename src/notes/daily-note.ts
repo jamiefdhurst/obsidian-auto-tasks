@@ -28,6 +28,10 @@ export default class DailyNote extends Note {
     const allNotes: Record<string, TFile> = getAllDailyNotes();
     const note: TFile = getDailyNote(start, allNotes);
 
+    if (!note) {
+      return false;
+    }
+
     return note.name === file.name && checkCreateTime(note);
   }
 }
