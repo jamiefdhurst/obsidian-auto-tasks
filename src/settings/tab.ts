@@ -1,71 +1,26 @@
-import { App, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, PluginSettingTab, Setting } from 'obsidian';
 import AutoTasks from 'src';
+import { KanbanPluginAdapter } from 'src/plugins/kanban';
 import { capitalise } from 'src/utils';
-import { Kanban } from './plugins/kanban';
-import { KanbanManager } from './kanban/kanban-manager';
-
-export type IPeriodicity = 
-  | 'daily'
-  | 'weekly';
-
-export interface IPeriodicitySettings {
-  available: boolean;
-  carryOver: boolean;
-  setDueDate: boolean;
-  header: string;
-  searchHeaders: string[];
-}
-
-export interface ISettings {
-  kanbanSync: boolean;
-  kanbanFile: string;
-  daily: IPeriodicitySettings;
-  weekly: IPeriodicitySettings;
-}
-
-export const DEFAULT_SETTINGS: ISettings = Object.freeze({
-  kanbanSync: false,
-  kanbanFile: '',
-  daily: { 
-    available: false,
-    carryOver: false,
-    setDueDate: false,
-    header: '## TODOs',
-    searchHeaders: [],
-  },
-  weekly: {
-    available: false,
-    carryOver: false,
-    setDueDate: false,
-    header: '## TODOs',
-    searchHeaders: [],
-  },
-});
-
-export function applyDefaultSettings(savedSettings: ISettings): ISettings {
-  return Object.assign(
-    {},
-    DEFAULT_SETTINGS,
-    savedSettings
-  );
-}
+import { IPeriodicity, ISettings } from '.';
+import { KanbanProvider } from 'src/kanban/provider';
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
-  public plugin: AutoTasks;
-  private kanban: Kanban;
-  private kanbanManager: KanbanManager;
+  private plugin: AutoTasks;
+  private kanbanPlugin: KanbanPluginAdapter;
+  private kanban: KanbanProvider;
 
-  constructor(app: App, plugin: AutoTasks, kanban: Kanban, kanbanManager: KanbanManager) {
+  constructor(app: App, plugin: AutoTasks, kanbanPlugin: KanbanPluginAdapter, kanban: KanbanProvider) {
     super(app, plugin);
     this.plugin = plugin;
+    this.kanbanPlugin = kanbanPlugin;
     this.kanban = kanban;
-    this.kanbanManager = kanbanManager;
   }
 
   display(): void {
     this.containerEl.empty();
 
-    let settings: ISettings = this.plugin.settings;
+    let settings: ISettings = this.plugin.getSettings();
     const periodicities: IPeriodicity[] = [
       'daily',
       'weekly',
@@ -132,7 +87,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
 
     const kanbanEl = this.containerEl.createDiv();
     kanbanEl.createEl('h3', { text: 'Kanban board' });
-    if (!this.kanban.isKanbanPluginEnabled()) {
+    if (!this.kanbanPlugin.isEnabled()) {
       const bannerEl = kanbanEl.createDiv({ cls: 'settings-banner' });
       new Setting(bannerEl)
         .setName('Kanban support')
@@ -152,7 +107,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
             .setValue(settings.kanbanSync)
             .onChange(async (val) => {
               settings.kanbanSync = val;
-              settings = await this.kanbanManager.resolveSettings(settings);
+              settings = await this.kanban.resolveSettings(settings);
               fileReadOnlySetting.clear();
               this.displayKanbanFile(fileReadOnlySetting, settings);
               await this.plugin.updateSettings(settings);
@@ -175,4 +130,3 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
         });
   }
 }
-

@@ -1,17 +1,15 @@
-import { ISettings } from 'src/settings';
-import { KanbanManager } from './kanban-manager';
 import { TFile } from 'obsidian';
+import { KanbanProvider } from './provider';
 
 const DEFAULT_TIMEOUT = 5000;
 
-export class TaskWatcher {
+export class Watcher {
 
-  private kanbanManager: KanbanManager;
-  private settings: ISettings;
+  private kanban: KanbanProvider;
   private timeouts: Map<string, number> = new Map();
 
-  constructor(kanbanManager: KanbanManager, settings: ISettings) {
-    this.kanbanManager = kanbanManager;
+  constructor(kanban: KanbanProvider) {
+    this.kanban = kanban;
   }
 
   notifyCreate(file: TFile) {
@@ -41,7 +39,7 @@ export class TaskWatcher {
   }
 
   run(file: TFile) {
-    console.log('Processing files from watcher...',file);
-    this.kanbanManager.processFiles([file]);
+    console.log('Processing files from watcher...', file);
+    this.kanban.synchroniseTasks([file]);
   }
 }

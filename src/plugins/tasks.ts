@@ -1,18 +1,18 @@
 import type { Plugin } from 'obsidian';
 import type { ObsidianAppWithPlugins } from '../types';
 
-export const TASKS_NAME: string = 'obsidian-tasks-plugin';
+const PLUGIN_NAME: string = 'obsidian-tasks-plugin';
 
 export interface ITasksPlugin extends Plugin {}
 
-export class Tasks {
+export class TasksPluginAdapter {
   private app: ObsidianAppWithPlugins;
 
   constructor(app: ObsidianAppWithPlugins) {
     this.app = app;
   }
 
-  isTasksPluginEnabled(): boolean {
-    return this.app.plugins.enabledPlugins.has(TASKS_NAME);
+  isEnabled(): boolean {
+    return this.app.plugins.enabledPlugins.has(PLUGIN_NAME);
   }
 }
