@@ -3,16 +3,14 @@ import Note from 'src/notes';
 import DailyNote from 'src/notes/daily-note';
 import WeeklyNote from 'src/notes/weekly-note';
 import { IPeriodicitySettings, ISettings } from 'src/settings';
-import { TasksParser } from './tasks-parser';
+import { TaskCollection } from './collection';
+import { Task } from './task';
 
-export class TasksManager {
-
+export class TasksProvider {
   private vault: Vault;
-  private parser: TasksParser;
 
-  constructor(vault: Vault, parser: TasksParser) {
+  constructor(vault: Vault) {
     this.vault = vault;
-    this.parser = parser;
   }
 
   async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<void> {
@@ -25,11 +23,15 @@ export class TasksManager {
       
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
-      const tasks: string[] = this.parser.extractAllTasks(previousEntryContents, setting.searchHeaders);
-      let incompleteTasks: string[] = tasks.filter(task => !this.parser.isComplete(task));
+      const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(setting.searchHeaders);
+      let incompleteTasks: Task[] = tasks.filter(task => !task.isComplete());
 
       if (setting.setDueDate) {
-        incompleteTasks = incompleteTasks.map(task => this.parser.setDueDate(task, moment()));
+        incompleteTasks = incompleteTasks.map(task => {
+          task.setDueDate(moment());
+
+          return task;
+        });
       }
       
       // Add them into the new entry

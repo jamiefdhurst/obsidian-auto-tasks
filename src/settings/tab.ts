@@ -1,61 +1,26 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import AutoTasks from 'src';
+import { KanbanPluginAdapter } from 'src/plugins/kanban';
 import { capitalise } from 'src/utils';
-
-export type IPeriodicity = 
-  | 'daily'
-  | 'weekly';
-
-export interface IPeriodicitySettings {
-  available: boolean;
-  carryOver: boolean;
-  setDueDate: boolean;
-  header: string;
-  searchHeaders: string[];
-}
-
-export interface ISettings {
-  daily: IPeriodicitySettings;
-  weekly: IPeriodicitySettings;
-}
-
-export const DEFAULT_SETTINGS: ISettings = Object.freeze({
-  daily: { 
-    available: false,
-    carryOver: false,
-    setDueDate: false,
-    header: '## TODOs',
-    searchHeaders: [],
-  },
-  weekly: {
-    available: false,
-    carryOver: false,
-    setDueDate: false,
-    header: '## TODOs',
-    searchHeaders: [],
-  },
-});
-
-export function applyDefaultSettings(savedSettings: ISettings): ISettings {
-  return Object.assign(
-    {},
-    DEFAULT_SETTINGS,
-    savedSettings
-  );
-}
+import { IPeriodicity, ISettings } from '.';
+import { KanbanProvider } from 'src/kanban/provider';
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
-  public plugin: AutoTasks;
+  private plugin: AutoTasks;
+  private kanbanPlugin: KanbanPluginAdapter;
+  private kanban: KanbanProvider;
 
-  constructor(app: App, plugin: AutoTasks) {
+  constructor(app: App, plugin: AutoTasks, kanbanPlugin: KanbanPluginAdapter, kanban: KanbanProvider) {
     super(app, plugin);
     this.plugin = plugin;
+    this.kanbanPlugin = kanbanPlugin;
+    this.kanban = kanban;
   }
 
   display(): void {
     this.containerEl.empty();
 
-    const settings: ISettings = this.plugin.settings;
+    let settings: ISettings = this.plugin.getSettings();
     const periodicities: IPeriodicity[] = [
       'daily',
       'weekly',
@@ -67,7 +32,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
       new Setting(bannerEl)
         .setName('No periodic notes enabled')
         .setHeading()
-        .setDesc(' No periodic notes settings are enabled. You must turn on either the daily or weekly notes within the Periodic Notes plugin settings to be able to configure automatic tasks.');
+        .setDesc('No periodic notes settings are enabled. You must turn on either the daily or weekly notes within the Periodic Notes plugin settings to be able to configure automatic tasks.');
     }
 
     for (const periodicity of periodicities) {
@@ -119,6 +84,49 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
           });
       }
     }
+
+    const kanbanEl = this.containerEl.createDiv();
+    kanbanEl.createEl('h3', { text: 'Kanban board' });
+    if (!this.kanbanPlugin.isEnabled()) {
+      const bannerEl = kanbanEl.createDiv({ cls: 'settings-banner' });
+      new Setting(bannerEl)
+        .setName('Kanban support')
+        .setHeading()
+        .setDesc('Download and enable the Kanban plugin to automatically sync tasks into your chosen Kanban board.');
+
+    } else {
+
+      const syncSetting = new Setting(kanbanEl);
+      const fileReadOnlySetting = new Setting(kanbanEl);
+
+      syncSetting
+        .setName('Automatically synchronise tasks to Kanban board')
+        .setDesc('Any newly discovered tasks will be added into the Kanban board you choose.')
+        .addToggle((toggle) => {
+          toggle
+            .setValue(settings.kanbanSync)
+            .onChange(async (val) => {
+              settings.kanbanSync = val;
+              settings = await this.kanban.resolveSettings(settings);
+              fileReadOnlySetting.clear();
+              this.displayKanbanFile(fileReadOnlySetting, settings);
+              await this.plugin.updateSettings(settings);
+            });
+        });
+      
+      this.displayKanbanFile(fileReadOnlySetting, settings);
+    }
+  }
+
+  private displayKanbanFile(settingComponent: Setting, settings: ISettings) {
+    settingComponent
+        .setName('Primary Kanban board')
+        .setDesc('This is the Kanban board that will have tasks automatically added. '
+          + 'If you turn on Kanban sync above and this does not exist, it will be created for you.')
+        .addText((text) => {
+          text
+            .setDisabled(true)
+            .setValue(settings.kanbanFile);
+        });
   }
 }
-
