@@ -1,9 +1,11 @@
+import { Moment } from 'moment';
 import type { TAbstractFile, TFile } from 'obsidian';
 
 const CREATE_TIME_GAP_MS = 1000;
 
 export default abstract class Note {
   abstract getCurrent(): TFile;
+  abstract getNextDate(): Moment;
   abstract getPrevious(): TFile;
   abstract isValid(file: TAbstractFile): boolean;
 }

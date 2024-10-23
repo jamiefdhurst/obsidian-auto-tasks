@@ -59,6 +59,16 @@ export class KanbanProvider {
     }
   }
 
+  async getBoard(): Promise<KanbanBoard | undefined> {
+    const settings: ISettings = this.plugin.getSettings();
+
+    if (!settings.kanbanSync) {
+      return undefined;
+    }
+
+    return await this.boardManager.get(settings.kanbanFile);
+  }
+
   getWatcher(): Watcher {
     return this.watcher;
   }

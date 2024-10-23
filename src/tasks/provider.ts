@@ -5,12 +5,16 @@ import WeeklyNote from 'src/notes/weekly-note';
 import { IPeriodicitySettings, ISettings } from 'src/settings';
 import { TaskCollection } from './collection';
 import { Task } from './task';
+import { KanbanProvider } from 'src/kanban/provider';
+import { DUE, PROGRESS, UPCOMING } from 'src/kanban/board';
 
 export class TasksProvider {
   private vault: Vault;
+  private kanban: KanbanProvider;
 
-  constructor(vault: Vault) {
+  constructor(vault: Vault, kanban: KanbanProvider) {
     this.vault = vault;
+    this.kanban = kanban;
   }
 
   async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<void> {
@@ -32,6 +36,18 @@ export class TasksProvider {
 
           return task;
         });
+      }
+
+      // Find any tasks that are due elsewhere in other files, pull these from the central board
+      const board = await this.kanban.getBoard();
+      if (board !== undefined) {
+        const boardTasks = board.getTaskCollection();
+        for (const task of boardTasks.getTasksFromLists([UPCOMING, DUE, PROGRESS])) {
+          const dueDate = task.getDueDate();
+          if (dueDate && moment(dueDate).isBefore(cls.getNextDate())) {
+            tasksToAdd.push(task);
+          }
+        }
       }
       
       // Add them into the new entry

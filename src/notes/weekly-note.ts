@@ -8,17 +8,18 @@ const UNIT: unitOfTime.Base = 'week';
 
 export default class WeeklyNote extends Note {
 
-  private date: Moment = moment();
+  private date: Moment = moment().startOf(UNIT);
   
   getCurrent(): TFile {
-    const date: Moment = this.date.clone().startOf(UNIT);
-    const allNotes: Record<string, TFile> = getAllWeeklyNotes();
+    return getWeeklyNote(this.date, getAllWeeklyNotes());
+  }
 
-    return getWeeklyNote(date, allNotes);
+  getNextDate(): Moment {
+    return this.date.clone().add(1, UNIT);
   }
 
   getPrevious(): TFile {
-    let date: Moment = this.date.clone().startOf(UNIT).subtract(1, UNIT);
+    let date: Moment = this.date.clone().subtract(1, UNIT);
     const limit = date.clone().subtract(MAX_PREVIOUS, UNIT);
     const allNotes: Record<string, TFile> = getAllWeeklyNotes();
     let note: TFile;
@@ -31,9 +32,7 @@ export default class WeeklyNote extends Note {
   }
 
   isValid(file: TAbstractFile): boolean {
-    const start: Moment = this.date.clone().startOf(UNIT);
-    const allNotes: Record<string, TFile> = getAllWeeklyNotes();
-    const note: TFile = getWeeklyNote(start, allNotes);
+    const note: TFile = getWeeklyNote(this.date, getAllWeeklyNotes());
     
     return note.name === file.name && checkCreateTime(note);
   }

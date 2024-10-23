@@ -25,7 +25,7 @@ export default class AutoTasks extends Plugin {
     this.kanbanPlugin = new KanbanPluginAdapter(app);
     
     this.kanban = new KanbanProvider(this, app.vault, app.metadataCache);
-    this.tasks = new TasksProvider(app.vault);
+    this.tasks = new TasksProvider(app.vault, this.kanban);
   }
   
   async onload(): Promise<void> {
