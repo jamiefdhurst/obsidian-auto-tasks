@@ -24,10 +24,10 @@ export class TasksProvider {
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
       const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(setting.searchHeaders);
-      let incompleteTasks: Task[] = tasks.filter(task => !task.isComplete());
+      let tasksToAdd: Task[] = tasks.filter(task => !task.isComplete());
 
       if (setting.setDueDate) {
-        incompleteTasks = incompleteTasks.map(task => {
+        tasksToAdd = tasksToAdd.map(task => {
           task.setDueDate(moment());
 
           return task;
@@ -39,7 +39,7 @@ export class TasksProvider {
       const newEntryContents: string = await this.vault.read(newEntry);
 
       // Save and refresh any views
-      await this.vault.modify(newEntry, `${newEntryContents}\n\n${setting.header}\n\n${incompleteTasks.join('\n')}`);
+      await this.vault.modify(newEntry, `${newEntryContents}\n\n${setting.header}\n\n${tasksToAdd.join('\n')}`);
     }
   }
 }
