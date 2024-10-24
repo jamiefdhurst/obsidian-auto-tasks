@@ -72,10 +72,6 @@ export class Task {
     this.complete = !!this.line.match(TASK_COMPLETE);
   }
 
-  setDueDate(date: Moment) {
-    this.dueDate = date;
-  }
-
   toString(): string {
     const complete = this.complete ? 'x' : ' ';
     let metadata = this.metadata;

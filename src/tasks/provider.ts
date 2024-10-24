@@ -30,22 +30,16 @@ export class TasksProvider {
       const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(setting.searchHeaders);
       let tasksToAdd: Task[] = tasks.filter(task => !task.isComplete());
 
-      if (setting.setDueDate) {
-        tasksToAdd = tasksToAdd.map(task => {
-          task.setDueDate(moment());
-
-          return task;
-        });
-      }
-
       // Find any tasks that are due elsewhere in other files, pull these from the central board
-      const board = await this.kanban.getBoard();
-      if (board !== undefined) {
-        const boardTasks = board.getTaskCollection();
-        for (const task of boardTasks.getTasksFromLists([UPCOMING, DUE, PROGRESS])) {
-          const dueDate = task.getDueDate();
-          if (dueDate && moment(dueDate).isBefore(cls.getNextDate())) {
-            tasksToAdd.push(task);
+      if (setting.addDue) {
+        const board = await this.kanban.getBoard();
+        if (board !== undefined) {
+          const boardTasks = board.getTaskCollection();
+          for (const task of boardTasks.getTasksFromLists([UPCOMING, DUE, PROGRESS])) {
+            const dueDate = task.getDueDate();
+            if (dueDate && moment(dueDate).isBefore(cls.getNextDate())) {
+              tasksToAdd.push(task);
+            }
           }
         }
       }
