@@ -50,13 +50,13 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
               });
           });
         new Setting(this.containerEl)
-          .setName('Set a due date')
-          .setDesc(`Whether a due date for the current period should be automatically applied to any tasks that are created in the ${periodicity} note.`)
+          .setName('Add due tasks')
+          .setDesc(`Whether any tasks from anywhere else in the vault should be added that are marked as due within the ${periodicity} period.`)
           .addToggle((toggle) => {
             toggle
-              .setValue(settings[periodicity].setDueDate)
+              .setValue(settings[periodicity].addDue)
               .onChange(async (val) => {
-                settings[periodicity].setDueDate = val;
+                settings[periodicity].addDue = val;
                 await this.plugin.updateSettings(settings);
               });
           });

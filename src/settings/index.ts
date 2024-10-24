@@ -3,9 +3,9 @@ export type IPeriodicity =
   | 'weekly';
 
 export interface IPeriodicitySettings {
+  addDue: boolean;
   available: boolean;
   carryOver: boolean;
-  setDueDate: boolean;
   header: string;
   searchHeaders: string[];
 }
@@ -20,17 +20,17 @@ export interface ISettings {
 export const DEFAULT_SETTINGS: ISettings = Object.freeze({
   kanbanSync: false,
   kanbanFile: '',
-  daily: { 
+  daily: {
+    addDue: false,
     available: false,
     carryOver: false,
-    setDueDate: false,
     header: '## TODOs',
     searchHeaders: [],
   },
   weekly: {
+    addDue: false,
     available: false,
     carryOver: false,
-    setDueDate: false,
     header: '## TODOs',
     searchHeaders: [],
   },

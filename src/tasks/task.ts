@@ -24,6 +24,11 @@ export class Task {
     return this.name === task.getName();
   }
 
+  getDueDate(): string | undefined {
+    const meta = this.getMetadata();
+    return meta.get('📅');
+  };
+
   getMetadata(): Map<string, string> {
     const map = new Map<string, string>();
     for (const char of METADATA_CHARS) {
@@ -65,10 +70,6 @@ export class Task {
     }
 
     this.complete = !!this.line.match(TASK_COMPLETE);
-  }
-
-  setDueDate(date: Moment) {
-    this.dueDate = date;
   }
 
   toString(): string {

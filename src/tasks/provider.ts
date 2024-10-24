@@ -5,12 +5,16 @@ import WeeklyNote from 'src/notes/weekly-note';
 import { IPeriodicitySettings, ISettings } from 'src/settings';
 import { TaskCollection } from './collection';
 import { Task } from './task';
+import { KanbanProvider } from 'src/kanban/provider';
+import { DUE, PROGRESS, UPCOMING } from 'src/kanban/board';
 
 export class TasksProvider {
   private vault: Vault;
+  private kanban: KanbanProvider;
 
-  constructor(vault: Vault) {
+  constructor(vault: Vault, kanban: KanbanProvider) {
     this.vault = vault;
+    this.kanban = kanban;
   }
 
   async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<void> {
@@ -24,14 +28,20 @@ export class TasksProvider {
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
       const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(setting.searchHeaders);
-      let incompleteTasks: Task[] = tasks.filter(task => !task.isComplete());
+      let tasksToAdd: Task[] = tasks.filter(task => !task.isComplete());
 
-      if (setting.setDueDate) {
-        incompleteTasks = incompleteTasks.map(task => {
-          task.setDueDate(moment());
-
-          return task;
-        });
+      // Find any tasks that are due elsewhere in other files, pull these from the central board
+      if (setting.addDue) {
+        const board = await this.kanban.getBoard();
+        if (board !== undefined) {
+          const boardTasks = board.getTaskCollection();
+          for (const task of boardTasks.getTasksFromLists([UPCOMING, DUE, PROGRESS])) {
+            const dueDate = task.getDueDate();
+            if (dueDate && moment(dueDate).isBefore(cls.getNextDate())) {
+              tasksToAdd.push(task);
+            }
+          }
+        }
       }
       
       // Add them into the new entry
@@ -39,7 +49,7 @@ export class TasksProvider {
       const newEntryContents: string = await this.vault.read(newEntry);
 
       // Save and refresh any views
-      await this.vault.modify(newEntry, `${newEntryContents}\n\n${setting.header}\n\n${incompleteTasks.join('\n')}`);
+      await this.vault.modify(newEntry, `${newEntryContents}\n\n${setting.header}\n\n${tasksToAdd.join('\n')}`);
     }
   }
 }
