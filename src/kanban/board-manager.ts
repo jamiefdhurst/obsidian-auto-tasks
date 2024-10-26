@@ -1,12 +1,13 @@
 import { FrontMatterCache, MetadataCache, TFile, Vault } from 'obsidian';
 import { KanbanBoard, NAME, PROPERTY_NAME, PROPERTY_VALUE } from './board';
+import { ObsidianVault } from 'src/types';
 
 export class KanbanBoardManager {
 
-  private vault: Vault;
+  private vault: ObsidianVault;
   private metadataCache: MetadataCache;
 
-  constructor(vault: Vault, metadataCache: MetadataCache) {
+  constructor(vault: ObsidianVault, metadataCache: MetadataCache) {
     this.vault = vault;
     this.metadataCache = metadataCache;
   }
@@ -14,10 +15,6 @@ export class KanbanBoardManager {
   resolve(): string {
     for (const file of this.vault.getFiles()) {
       if (this.isValid(file.name)) {
-
-      }
-      const fileCache = this.metadataCache.getFileCache(file);
-      if (fileCache !== null && this.isDefaultBoard(fileCache.frontmatter)) {
         return file.name;
       }
     }

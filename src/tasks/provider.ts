@@ -7,12 +7,13 @@ import { TaskCollection } from './collection';
 import { Task } from './task';
 import { KanbanProvider } from 'src/kanban/provider';
 import { DUE, PROGRESS, UPCOMING } from 'src/kanban/board';
+import { ObsidianVault } from 'src/types';
 
 export class TasksProvider {
-  private vault: Vault;
+  private vault: ObsidianVault;
   private kanban: KanbanProvider;
 
-  constructor(vault: Vault, kanban: KanbanProvider) {
+  constructor(vault: ObsidianVault, kanban: KanbanProvider) {
     this.vault = vault;
     this.kanban = kanban;
   }

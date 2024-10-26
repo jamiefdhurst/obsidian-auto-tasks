@@ -2,11 +2,12 @@ import { TFile, Vault } from 'obsidian';
 import { TaskCollection } from '../tasks/collection';
 import { Task } from '../tasks/task';
 import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
+import { ObsidianVault } from 'src/types';
 
 export class KanbanSynchroniser {
-  private vault: Vault;
+  private vault: ObsidianVault;
 
-  constructor(vault: Vault) {
+  constructor(vault: ObsidianVault) {
     this.vault = vault;
   }
 

@@ -1,4 +1,4 @@
-import { DONE, DUE, PROGRESS, UPCOMING } from 'src/kanban/board';
+import { DONE, DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { Task } from './task';
 
 const HEADER_LINE: RegExp = /^#{1,6}/;

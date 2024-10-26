@@ -9,7 +9,7 @@ module.exports = {
   moduleFileExtensions: ['js', 'd.ts', 'ts'],
   globals: {
     'ts-jest': {
-      tsConfig: {
+      tsconfig: {
         module: 'CommonJS',
         verbatimModuleSyntax: false,
       }
