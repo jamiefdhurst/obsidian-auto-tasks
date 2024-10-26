@@ -27,12 +27,20 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
     ];
 
     if (!settings.daily.available && !settings.weekly.available) {
-      const bannerEl = this.containerEl.createDiv({ cls: 'settings-banner' });
+      const periodicBannerEl = this.containerEl.createDiv({ cls: 'settings-banner' });
 
-      new Setting(bannerEl)
+      new Setting(periodicBannerEl)
         .setName('No periodic notes enabled')
         .setHeading()
         .setDesc('No periodic notes settings are enabled. You must turn on either the daily or weekly notes within the Periodic Notes plugin settings to be able to configure automatic tasks.');
+    }
+
+    if (!settings.tasksAvailable) {
+      const tasksBannerEl = this.containerEl.createDiv({ cls: 'settings-banner' });
+      new Setting(tasksBannerEl)
+        .setName('Tasks Due Date support')
+        .setHeading()
+        .setDesc('Download and enable the Tasks plugin to enable due date functionality within your tasks and TODOs.');
     }
 
     for (const periodicity of periodicities) {
@@ -49,17 +57,19 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
                 await this.plugin.updateSettings(settings);
               });
           });
-        new Setting(this.containerEl)
-          .setName('Add due tasks')
-          .setDesc(`Whether any tasks from anywhere else in the vault should be added that are marked as due within the ${periodicity} period.`)
-          .addToggle((toggle) => {
-            toggle
-              .setValue(settings[periodicity].addDue)
-              .onChange(async (val) => {
-                settings[periodicity].addDue = val;
-                await this.plugin.updateSettings(settings);
-              });
-          });
+        if (settings.tasksAvailable) {
+          new Setting(this.containerEl)
+            .setName('Add due tasks')
+            .setDesc(`Whether any tasks from anywhere else in the vault should be added that are marked as due within the ${periodicity} period.`)
+            .addToggle((toggle) => {
+              toggle
+                .setValue(settings[periodicity].addDue)
+                .onChange(async (val) => {
+                  settings[periodicity].addDue = val;
+                  await this.plugin.updateSettings(settings);
+                });
+            });
+        }
         new Setting(this.containerEl)
           .setName(`${capitalise(periodicity)} tasks header`)
           .setDesc('Set the header to be added to the top of the tasks section within new notes - include any markdown to set the heading style.')

@@ -18,26 +18,26 @@ export class TasksProvider {
   }
 
   async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<void> {
-    await this.checkAndCreateForSingleNote(settings.weekly, file, new WeeklyNote());
-    await this.checkAndCreateForSingleNote(settings.daily, file, new DailyNote());
+    await this.checkAndCreateForSingleNote(settings, settings.weekly, file, new WeeklyNote());
+    await this.checkAndCreateForSingleNote(settings, settings.daily, file, new DailyNote());
   }
 
-  private async checkAndCreateForSingleNote(setting: IPeriodicitySettings, file: TAbstractFile, cls: Note): Promise<void> {
-    if (setting.available && setting.carryOver && cls.isValid(file)) {
+  private async checkAndCreateForSingleNote(settings: ISettings, periodicitySetting: IPeriodicitySettings, file: TAbstractFile, cls: Note): Promise<void> {
+    if (periodicitySetting.available && periodicitySetting.carryOver && cls.isValid(file)) {
       
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
-      const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(setting.searchHeaders);
+      const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(periodicitySetting.searchHeaders);
       let tasksToAdd: Task[] = tasks.filter(task => !task.isComplete());
 
       // Find any tasks that are due elsewhere in other files, pull these from the central board
-      if (setting.addDue) {
+      if (settings.tasksAvailable && settings.kanbanSync && periodicitySetting.addDue) {
         const board = await this.kanban.getBoard();
         if (board !== undefined) {
           const boardTasks = board.getTaskCollection();
           for (const task of boardTasks.getTasksFromLists([UPCOMING, DUE, PROGRESS])) {
             const dueDate = task.getDueDate();
-            if (dueDate && moment(dueDate).isBefore(cls.getNextDate())) {
+            if (dueDate && moment(dueDate).isBefore(cls.getNextDate()) && tasksToAdd.find(t => t.equals(task)) === undefined) {
               tasksToAdd.push(task);
             }
           }
@@ -49,7 +49,7 @@ export class TasksProvider {
       const newEntryContents: string = await this.vault.read(newEntry);
 
       // Save and refresh any views
-      await this.vault.modify(newEntry, `${newEntryContents}\n\n${setting.header}\n\n${tasksToAdd.join('\n')}`);
+      await this.vault.modify(newEntry, `${newEntryContents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`);
     }
   }
 }
