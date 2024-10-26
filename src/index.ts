@@ -45,13 +45,7 @@ export default class AutoTasks extends Plugin {
       return;
     }
 
-    if (!this.tasksPlugin.isEnabled()) {
-      new Notice(
-        'The Tasks plugin must be installed and available for Auto Tasks to work.',
-        10000
-      );
-      return;
-    }
+    this.settings.tasksAvailable = this.tasksPlugin.isEnabled();
 
     // Convert and setup settings from plugins
     const workspace: ObsidianWorkspace = this.app.workspace;
