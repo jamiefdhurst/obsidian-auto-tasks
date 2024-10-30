@@ -3,16 +3,17 @@ import { KanbanBoardManager, KanbanBoardOpenError, KanbanBoardResolveError } fro
 import { ObsidianVault } from '../../types';
 import { PROPERTY_NAME, PROPERTY_VALUE } from '../../kanban/board';
 
-describe('board-manager', () => {
-
-  let sut: KanbanBoardManager;
-  let metadataCache: MetadataCache;
-  let vault: ObsidianVault;
+describe('kanban board-manager', () => {
 
   const dummyFile: TFile = {
     basename: 'example',
     name: 'example.md'
   } as unknown as TFile;
+
+  let metadataCache: MetadataCache;
+  let vault: ObsidianVault;
+
+  let sut: KanbanBoardManager;
 
   beforeEach(() => {
     vault = jest.fn() as unknown as ObsidianVault;

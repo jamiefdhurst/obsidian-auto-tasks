@@ -1,4 +1,4 @@
-import { TFile, Vault } from 'obsidian';
+import { TFile } from 'obsidian';
 import { TaskCollection } from '../tasks/collection';
 import { Task } from '../tasks/task';
 import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
@@ -31,25 +31,19 @@ export class KanbanSynchroniser {
 
     // Discover any tasks within the current file
     const fileTasks: Task[] = (new TaskCollection(await this.vault.read(file), true)).getAllTasks();
-    console.log('Discovered ' + fileTasks.length + ' tasks in file ' + file.name);
 
     for (const task of fileTasks) {
 
-      console.log('Checking task ' + task);
       const existingTask = kanbanTasks.getTask(task);
       if (!existingTask) {
-      
-        console.log('Task ' + task + ' is not present and needs to be added');        
         kanbanTasks.add(task);
-
       } else {
-
-        if (task.isDue() && !task.isComplete()) {
+        if (!task.isComplete() && kanbanTasks.getList(task) === DONE) {
+          kanbanTasks.move(task, task.isDue() ? DUE : UPCOMING);
+        } else  if (task.isDue() && !task.isComplete()) {
           if (kanbanTasks.getList(task) !== DUE) {
             kanbanTasks.move(task, DUE);
           }
-        } else if (!task.isComplete() && kanbanTasks.getList(task) === DONE) {
-          kanbanTasks.move(task, task.isDue() ? DUE : UPCOMING);
         } else if (task.isComplete() && kanbanTasks.getList(task) !== DONE) {
           kanbanTasks.move(task, DONE);
         } else {

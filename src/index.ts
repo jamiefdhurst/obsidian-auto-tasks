@@ -53,7 +53,7 @@ export default class AutoTasks extends Plugin {
     const workspace: ObsidianWorkspace = this.app.workspace;
     this.registerEvent(workspace.on(PERIODIC_NOTES_EVENT_SETTING_UPDATED, this.syncPeriodicNotesSettings.bind(this)));
     this.syncPeriodicNotesSettings();
-    this.kanban.resolveSettings().then((newSettings: ISettings) => {
+    this.kanban.resolveSettings(this.settings).then((newSettings: ISettings) => {
       this.updateSettings(newSettings);
     });
 

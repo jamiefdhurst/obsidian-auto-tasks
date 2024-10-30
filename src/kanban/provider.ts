@@ -1,11 +1,11 @@
-import { MetadataCache, TFile, Vault } from 'obsidian';
-import AutoTasks from 'src';
-import { ISettings } from 'src/settings';
+import { MetadataCache, TFile } from 'obsidian';
+import { ObsidianVault } from 'src/types';
+import AutoTasks from '..';
+import { ISettings } from '../settings';
+import { KanbanBoard } from './board';
 import { KanbanBoardManager } from './board-manager';
 import { KanbanSynchroniser } from './synchroniser';
-import { KanbanBoard } from './board';
 import { Watcher } from './watcher';
-import { ObsidianVault } from 'src/types';
 
 export class KanbanProvider {
   private plugin: AutoTasks;
@@ -13,24 +13,28 @@ export class KanbanProvider {
   private synchroniser: KanbanSynchroniser;
   private watcher: Watcher;
   
-  constructor(plugin: AutoTasks, vault: ObsidianVault, metadataCache: MetadataCache) {
+  constructor(
+    plugin: AutoTasks,
+    vault: ObsidianVault,
+    metadataCache: MetadataCache,
+    boardManager?: KanbanBoardManager,
+    synchroniser?: KanbanSynchroniser,
+    watcher?: Watcher
+  ) {
     this.plugin = plugin;
-    this.boardManager = new KanbanBoardManager(vault, metadataCache);
-    this.synchroniser = new KanbanSynchroniser(vault);
-    this.watcher = new Watcher(this);
+    this.boardManager = boardManager || new KanbanBoardManager(vault, metadataCache);
+    this.synchroniser = synchroniser || new KanbanSynchroniser(vault);
+    this.watcher = watcher || new Watcher(this);
   }
 
-  async resolveSettings(settings?: ISettings): Promise<ISettings> {
-    if (!settings) {
-      settings = this.plugin.getSettings();
-    }
-
+  async resolveSettings(settings: ISettings): Promise<ISettings> {
     if (!settings.kanbanSync) {
       return settings;
     }
 
     if (settings.kanbanFile === '') {
       settings.kanbanFile = await this.boardManager.create();
+      return settings;
     }
 
     if (!this.boardManager.isValid(settings.kanbanFile)) {
