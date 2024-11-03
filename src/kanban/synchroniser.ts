@@ -1,8 +1,8 @@
 import { TFile } from 'obsidian';
 import { TaskCollection } from '../tasks/collection';
 import { Task } from '../tasks/task';
+import { ObsidianVault } from '../types';
 import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
-import { ObsidianVault } from 'src/types';
 
 export class KanbanSynchroniser {
   private vault: ObsidianVault;

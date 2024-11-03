@@ -1,4 +1,4 @@
-import { FrontMatterCache, MetadataCache, TFile, Vault } from 'obsidian';
+import { FrontMatterCache, MetadataCache, TFile } from 'obsidian';
 import { KanbanBoard, NAME, PROPERTY_NAME, PROPERTY_VALUE } from './board';
 import { ObsidianVault } from 'src/types';
 

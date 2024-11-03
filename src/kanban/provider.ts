@@ -1,7 +1,7 @@
 import { MetadataCache, TFile } from 'obsidian';
-import { ObsidianVault } from 'src/types';
 import AutoTasks from '..';
 import { ISettings } from '../settings';
+import { ObsidianVault } from '../types';
 import { KanbanBoard } from './board';
 import { KanbanBoardManager } from './board-manager';
 import { KanbanSynchroniser } from './synchroniser';
