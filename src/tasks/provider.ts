@@ -1,25 +1,30 @@
-import { moment, TAbstractFile, Vault } from 'obsidian';
-import Note from 'src/notes';
-import DailyNote from 'src/notes/daily-note';
-import WeeklyNote from 'src/notes/weekly-note';
-import { IPeriodicitySettings, ISettings } from 'src/settings';
+import { moment, TAbstractFile } from 'obsidian';
+import { DUE, PROGRESS, UPCOMING } from '../kanban/board';
+import { KanbanProvider } from '../kanban/provider';
+import Note from '../notes';
+import DailyNote from '../notes/daily-note';
+import WeeklyNote from '../notes/weekly-note';
+import { IPeriodicitySettings, ISettings } from '../settings';
+import { ObsidianVault } from '../types';
 import { TaskCollection } from './collection';
 import { Task } from './task';
-import { KanbanProvider } from 'src/kanban/provider';
-import { DUE, PROGRESS, UPCOMING } from 'src/kanban/board';
 
 export class TasksProvider {
-  private vault: Vault;
+  private vault: ObsidianVault;
   private kanban: KanbanProvider;
+  private dailyNote: DailyNote;
+  private weeklyNote: WeeklyNote;
 
-  constructor(vault: Vault, kanban: KanbanProvider) {
+  constructor(vault: ObsidianVault, kanban: KanbanProvider, dailyNote?: DailyNote, weeklyNote?: WeeklyNote) {
     this.vault = vault;
     this.kanban = kanban;
+    this.dailyNote = dailyNote || new DailyNote();
+    this.weeklyNote = weeklyNote || new WeeklyNote();
   }
 
   async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<void> {
-    await this.checkAndCreateForSingleNote(settings, settings.weekly, file, new WeeklyNote());
-    await this.checkAndCreateForSingleNote(settings, settings.daily, file, new DailyNote());
+    await this.checkAndCreateForSingleNote(settings, settings.weekly, file, this.weeklyNote);
+    await this.checkAndCreateForSingleNote(settings, settings.daily, file, this.dailyNote);
   }
 
   private async checkAndCreateForSingleNote(settings: ISettings, periodicitySetting: IPeriodicitySettings, file: TAbstractFile, cls: Note): Promise<void> {

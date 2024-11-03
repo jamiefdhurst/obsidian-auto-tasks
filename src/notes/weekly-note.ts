@@ -34,6 +34,10 @@ export default class WeeklyNote extends Note {
   isValid(file: TAbstractFile): boolean {
     const note: TFile = getWeeklyNote(this.date, getAllWeeklyNotes());
     
+    if (!note) {
+      return false;
+    }
+
     return note.name === file.name && checkCreateTime(note);
   }
 }

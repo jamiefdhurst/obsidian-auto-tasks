@@ -7,7 +7,7 @@ import { TasksPluginAdapter } from './plugins/tasks';
 import { DEFAULT_SETTINGS, type ISettings } from './settings';
 import { AutoTasksSettingsTab } from './settings/tab';
 import { TasksProvider } from './tasks/provider';
-import type { ObsidianApp, ObsidianWorkspace } from './types';
+import type { ObsidianApp, ObsidianVault, ObsidianWorkspace } from './types';
 
 export default class AutoTasks extends Plugin {
   private settings: ISettings = DEFAULT_SETTINGS;
@@ -20,12 +20,14 @@ export default class AutoTasks extends Plugin {
   constructor(app: ObsidianApp, manifest: PluginManifest) {
     super(app, manifest);
 
+    const vault: ObsidianVault = app.vault;
+
     this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app);
     this.tasksPlugin = new TasksPluginAdapter(app);
     this.kanbanPlugin = new KanbanPluginAdapter(app);
     
-    this.kanban = new KanbanProvider(this, app.vault, app.metadataCache);
-    this.tasks = new TasksProvider(app.vault, this.kanban);
+    this.kanban = new KanbanProvider(this, vault, app.metadataCache);
+    this.tasks = new TasksProvider(vault, this.kanban);
   }
   
   async onload(): Promise<void> {
@@ -51,7 +53,7 @@ export default class AutoTasks extends Plugin {
     const workspace: ObsidianWorkspace = this.app.workspace;
     this.registerEvent(workspace.on(PERIODIC_NOTES_EVENT_SETTING_UPDATED, this.syncPeriodicNotesSettings.bind(this)));
     this.syncPeriodicNotesSettings();
-    this.kanban.resolveSettings().then((newSettings: ISettings) => {
+    this.kanban.resolveSettings(this.settings).then((newSettings: ISettings) => {
       this.updateSettings(newSettings);
     });
 

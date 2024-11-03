@@ -1,9 +1,9 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import AutoTasks from 'src';
-import { KanbanPluginAdapter } from 'src/plugins/kanban';
-import { capitalise } from 'src/utils';
 import { IPeriodicity, ISettings } from '.';
-import { KanbanProvider } from 'src/kanban/provider';
+import AutoTasks from '..';
+import { KanbanProvider } from '../kanban/provider';
+import { KanbanPluginAdapter } from '../plugins/kanban';
+import { capitalise } from '../utils';
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
   private plugin: AutoTasks;
@@ -38,7 +38,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
     if (!settings.tasksAvailable) {
       const tasksBannerEl = this.containerEl.createDiv({ cls: 'settings-banner' });
       new Setting(tasksBannerEl)
-        .setName('Tasks Due Date support')
+        .setName('Tasks due date support')
         .setHeading()
         .setDesc('Download and enable the Tasks plugin to enable due date functionality within your tasks and TODOs.');
     }

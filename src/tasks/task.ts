@@ -7,6 +7,8 @@ const TASK_DUE_DATE: RegExp = /\s📅\s(\d{4}-\d{2}-\d{2})/;
 const TASK_NAME: RegExp = /^(-\s\[[x\s]\]\s)(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|$)/;
 const TOMORROW: Moment = moment().add(1, 'day');
 
+export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
+
 export class Task {
   private complete?: boolean;
   private dueDate?: Moment;
@@ -32,7 +34,7 @@ export class Task {
   getMetadata(): Map<string, string> {
     const map = new Map<string, string>();
     for (const char of METADATA_CHARS) {
-      if (this.metadata.contains(char)) {
+      if (this.metadata.includes(char)) {
         const matched = this.metadata.match(new RegExp(String.raw`\s${char}\s(.*?)(?:\s|$)`));
         if (matched) {
           map.set(char, matched[1]);
@@ -76,7 +78,7 @@ export class Task {
     const complete = this.complete ? 'x' : ' ';
     let metadata = this.metadata;
     if (this.dueDate) {
-      metadata = metadata.replace(TASK_DUE_DATE, ` 📅 ${this.dueDate.format('YYYY-MM-DD')}`);
+      metadata = metadata.replace(TASK_DUE_DATE, ` 📅 ${this.dueDate.format(DUE_DATE_FORMAT)}`);
     }
 
     return `- [${complete}] ${this.name}${metadata}`;

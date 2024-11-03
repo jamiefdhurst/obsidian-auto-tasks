@@ -35,7 +35,10 @@ export class PeriodicNotesPluginAdapter {
   }
 
   private getSettings(): IPeriodicNotesSettings {
-    return this.getPlugin().settings || ({} as IPeriodicNotesSettings);
+    return this.getPlugin().settings || ({
+      daily: { enabled: false },
+      weekly: { enabled: false },
+    } as IPeriodicNotesSettings);
   }
 
   convertSettings(settings: ISettings) {
