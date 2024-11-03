@@ -51,7 +51,7 @@ labels:
 milestones:
   - title: Auto Tasks Initial Release
     description: Everything needed for the initial release of the plugin, including all functionality.
-    state: open
+    state: closed
 branches:
   - name: main
     protection:
