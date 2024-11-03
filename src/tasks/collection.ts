@@ -18,7 +18,7 @@ export class TaskCollection {
         this.tasks.set(currentHeader, []);
       }
       if (line.match(TASK_LINE)) {
-        const existingTasks = this.tasks.get(currentHeader) ?? [];
+        const existingTasks = this.tasks.get(currentHeader) || [];
         existingTasks.push(new Task(line));
         this.tasks.set(currentHeader, existingTasks);
       }
@@ -80,7 +80,7 @@ export class TaskCollection {
   getTasksFromLists(lists: string[]): Task[] {
     const returnTasks: Task[] = [];
     this.tasks.forEach((value, list) => {
-      if (!lists || lists[0] === '' || lists.contains(list)) {
+      if (!lists.length || lists[0] === '' || lists.indexOf(list) > -1) {
         returnTasks.push(...value);
       }
     });

@@ -34,7 +34,7 @@ export class Task {
   getMetadata(): Map<string, string> {
     const map = new Map<string, string>();
     for (const char of METADATA_CHARS) {
-      if (this.metadata.contains(char)) {
+      if (this.metadata.includes(char)) {
         const matched = this.metadata.match(new RegExp(String.raw`\s${char}\s(.*?)(?:\s|$)`));
         if (matched) {
           map.set(char, matched[1]);
