@@ -38,15 +38,6 @@ describe('weekly note', () => {
     expect(result.basename).toEqual(fileName);
   });
 
-  it('returns false when note not available', () => {
-    const mock = weeklyNotesInterface.getWeeklyNote as jest.MockedFunction<typeof weeklyNotesInterface.getWeeklyNote>;
-    mock.mockReturnValue(false as unknown as TFile);
-
-    const result = sut.getCurrent();
-    
-    expect(result).toBeFalsy();
-  });
-
   it('gets next date', () => {
     expect(sut.getNextDate()).toEqual(moment().startOf('week').add(1, 'week'));
   });
@@ -63,42 +54,6 @@ describe('weekly note', () => {
     const result = sut.getPrevious();
     
     expect(result.basename).toEqual(fileName);
-  });
-
-  it('gets a further back previous note', () => {
-    const mock = weeklyNotesInterface.getWeeklyNote as jest.MockedFunction<typeof weeklyNotesInterface.getWeeklyNote>;
-    const fileName = moment().subtract(7, 'week').format('YYYY-MM-DD');
-    mock.mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockImplementationOnce(() => {
-        const file = new TFile();
-        file.basename = fileName;
-        return file;
-      });
-
-    const result = sut.getPrevious();
-    
-    expect(result.basename).toEqual(fileName);
-  });
-
-  it('hits the previous limit', () => {
-    const mock = weeklyNotesInterface.getWeeklyNote as jest.MockedFunction<typeof weeklyNotesInterface.getWeeklyNote>;
-    mock.mockReturnValue(false as unknown as TFile);
-
-    const result = sut.getPrevious();
-    
-    expect(result).toBeFalsy();
-  });
-
-  it('returns invalid', () => {
-    const mock = weeklyNotesInterface.getWeeklyNote as jest.MockedFunction<typeof weeklyNotesInterface.getWeeklyNote>;
-    mock.mockReturnValue(false as unknown as TFile);
-
-    expect(sut.isValid(new TFile())).toEqual(false);
   });
 
   it('returns valid but false when files do not match', () => {

@@ -23,7 +23,10 @@ export class KanbanSynchroniser {
       }
     }
 
-    await this.vault.modify(this.vault.getFileByPath(board.getFileName()) as TFile, board.toString());
+    const boardFile = this.vault.getFileByPath(board.getFileName());
+    if (boardFile instanceof TFile) {
+      await this.vault.modify(boardFile, board.toString());
+    }
   }
 
   private async processSingle(board: KanbanBoard, file: TFile) {
