@@ -1,14 +1,11 @@
-import { CachedMetadata, FrontMatterCache, MetadataCache, TFile } from 'obsidian';
+import { CachedMetadata, FrontMatterCache, MetadataCache, TFile, Vault } from 'obsidian';
 import { KanbanBoardManager, KanbanBoardOpenError, KanbanBoardResolveError } from '../../kanban/board-manager';
 import { ObsidianVault } from '../../types';
 import { PROPERTY_NAME, PROPERTY_VALUE } from '../../kanban/board';
 
 describe('kanban board-manager', () => {
 
-  const dummyFile: TFile = {
-    basename: 'example',
-    name: 'example.md'
-  } as unknown as TFile;
+  let dummyFile: TFile;
 
   let metadataCache: MetadataCache;
   let vault: ObsidianVault;
@@ -18,6 +15,10 @@ describe('kanban board-manager', () => {
   beforeEach(() => {
     vault = jest.fn() as unknown as ObsidianVault;
     metadataCache = jest.fn() as unknown as MetadataCache;
+
+    dummyFile = new TFile();
+    dummyFile.basename = 'example';
+    dummyFile.name = 'example.md';
 
     sut = new KanbanBoardManager(vault, metadataCache);
   });

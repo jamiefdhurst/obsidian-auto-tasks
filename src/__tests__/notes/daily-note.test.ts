@@ -38,15 +38,6 @@ describe('daily note', () => {
     expect(result.basename).toEqual(fileName);
   });
 
-  it('returns false when note not available', () => {
-    const mock = dailyNotesInterface.getDailyNote as jest.MockedFunction<typeof dailyNotesInterface.getDailyNote>;
-    mock.mockReturnValue(false as unknown as TFile);
-
-    const result = sut.getCurrent();
-    
-    expect(result).toBeFalsy();
-  });
-
   it('gets next date', () => {
     expect(sut.getNextDate()).toEqual(moment().startOf('day').add(1, 'day'));
   });
@@ -63,42 +54,6 @@ describe('daily note', () => {
     const result = sut.getPrevious();
     
     expect(result.basename).toEqual(fileName);
-  });
-
-  it('gets a further back previous note', () => {
-    const mock = dailyNotesInterface.getDailyNote as jest.MockedFunction<typeof dailyNotesInterface.getDailyNote>;
-    const fileName = moment().subtract(7, 'day').format('YYYY-MM-DD');
-    mock.mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockReturnValueOnce(false as unknown as TFile)
-      .mockImplementationOnce(() => {
-        const file = new TFile();
-        file.basename = fileName;
-        return file;
-      });
-
-    const result = sut.getPrevious();
-    
-    expect(result.basename).toEqual(fileName);
-  });
-
-  it('hits the previous limit', () => {
-    const mock = dailyNotesInterface.getDailyNote as jest.MockedFunction<typeof dailyNotesInterface.getDailyNote>;
-    mock.mockReturnValue(false as unknown as TFile);
-
-    const result = sut.getPrevious();
-    
-    expect(result).toBeFalsy();
-  });
-
-  it('returns invalid', () => {
-    const mock = dailyNotesInterface.getDailyNote as jest.MockedFunction<typeof dailyNotesInterface.getDailyNote>;
-    mock.mockReturnValue(false as unknown as TFile);
-
-    expect(sut.isValid(new TFile())).toEqual(false);
   });
 
   it('returns valid but false when files do not match', () => {

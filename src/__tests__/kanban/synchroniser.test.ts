@@ -16,6 +16,7 @@ describe('kanban synchroniser', () => {
   beforeEach(() => {
     vault = jest.fn() as unknown as ObsidianVault;
     vault.getFileByPath = jest.fn();
+    jest.spyOn(vault, 'getFileByPath').mockReturnValue(new TFile());
     vault.getFiles = jest.fn();
     vault.modify = jest.fn();
     vault.read = jest.fn();
