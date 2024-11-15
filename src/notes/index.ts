@@ -1,4 +1,4 @@
-import { Moment } from 'moment';
+import { type Moment } from 'moment';
 import type { TAbstractFile, TFile } from 'obsidian';
 
 const CREATE_TIME_GAP_MS = 1000;

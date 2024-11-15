@@ -1,4 +1,4 @@
-import { Moment, unitOfTime } from 'moment';
+import { type Moment, type unitOfTime } from 'moment';
 import { moment, TAbstractFile, type TFile } from 'obsidian';
 import { getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
 import Note, { checkCreateTime } from '.';

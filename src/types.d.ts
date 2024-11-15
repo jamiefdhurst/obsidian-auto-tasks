@@ -16,6 +16,7 @@ export type ObsidianVault = {
   create(path: string, data: string, options?: DataWriteOptions): Promise<TFile>;
   read(file: TFile): Promise<string>;
   modify(file: TFile, data: string, options?: DataWriteOptions): Promise<void>;
+  process(file: TFile, fn: (data: string) => string, options?: DataWriteOptions): Promise<string>;
   getFiles(): TFile[];
   on(name: 'create', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
   on(name: 'modify', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
