@@ -45,8 +45,11 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
 
     for (const periodicity of periodicities) {
       if (settings[periodicity].available) {
-        this.containerEl.createEl('h3', { text: `${capitalise(periodicity)} notes` });
         new Setting(this.containerEl)
+          .setName(`${capitalise(periodicity)} notes`)
+          .setHeading();
+        new Setting(this.containerEl)
+          .setHeading()
           .setName(`Carry over ${periodicity} tasks`)
           .setDesc(`Whether any ${periodicity} tasks that are incomplete should be automatically carried over to the following note.`)
           .addToggle((toggle) => {
@@ -96,7 +99,9 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
     }
 
     const kanbanEl = this.containerEl.createDiv();
-    kanbanEl.createEl('h3', { text: 'Kanban board' });
+    new Setting(kanbanEl)
+      .setName('Kanban board')
+      .setHeading();
     if (!this.kanbanPlugin.isEnabled()) {
       const bannerEl = kanbanEl.createDiv({ cls: 'settings-banner' });
       new Setting(bannerEl)

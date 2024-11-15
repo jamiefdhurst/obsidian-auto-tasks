@@ -50,11 +50,7 @@ export class TasksProvider {
       }
       
       // Add them into the new entry
-      const newEntry = cls.getCurrent();
-      const newEntryContents: string = await this.vault.read(newEntry);
-
-      // Save and refresh any views
-      await this.vault.modify(newEntry, `${newEntryContents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`);
+      await this.vault.process(cls.getCurrent(), (contents) => `${contents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`)
     }
   }
 }
