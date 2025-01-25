@@ -8,18 +8,20 @@ const UNIT: unitOfTime.Base = 'day';
 
 export default class DailyNote extends Note {
 
-  private date: Moment = moment().startOf(UNIT);
+  private getDate(): Moment {
+    return moment().startOf(UNIT);
+  }
 
   getCurrent(): TFile {
-    return getDailyNote(this.date, getAllDailyNotes());
+    return getDailyNote(this.getDate(), getAllDailyNotes());
   }
 
   getNextDate(): Moment {
-    return this.date.clone().add(1, UNIT);
+    return this.getDate().clone().add(1, UNIT);
   }
 
   getPrevious(): TFile {
-    let date: Moment = this.date.clone().subtract(1, UNIT);
+    let date: Moment = this.getDate().clone().subtract(1, UNIT);
     const limit = date.clone().subtract(MAX_PREVIOUS, UNIT);
     const allNotes: Record<string, TFile> = getAllDailyNotes();
     let note: TFile;
@@ -32,7 +34,7 @@ export default class DailyNote extends Note {
   }
 
   isValid(file: TAbstractFile): boolean {
-    const note: TFile = getDailyNote(this.date, getAllDailyNotes());
+    const note: TFile = getDailyNote(this.getDate(), getAllDailyNotes());
 
     if (!note) {
       return false;
