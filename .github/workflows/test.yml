@@ -64,5 +64,5 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           summary-file: './coverage-results/Summary.md'
           check-name: 'Code Coverage'
-          line-threshold: 75
-          branch-threshold: 90
+          line-threshold: 80
+          branch-threshold: 85
