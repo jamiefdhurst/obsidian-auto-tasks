@@ -4,6 +4,7 @@ import { KanbanProvider } from '../../kanban/provider';
 import { KanbanPluginAdapter } from '../../plugins/kanban';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { AutoTasksSettingsTab } from '../../settings/tab';
+import { KanbanBoardManager } from '../../kanban/board-manager';
 
 describe('settings tab', () => {
 
@@ -11,6 +12,7 @@ describe('settings tab', () => {
   let plugin: AutoTasks;
   let kanbanPlugin: KanbanPluginAdapter;
   let kanban: KanbanProvider;
+  let kanbanBoardManager: KanbanBoardManager;
   let containerEl: HTMLElement;
 
   let sut: AutoTasksSettingsTab;
@@ -21,7 +23,10 @@ describe('settings tab', () => {
     plugin.getSettings = jest.fn();
     kanbanPlugin = jest.fn() as unknown as KanbanPluginAdapter;
     kanbanPlugin.isEnabled = jest.fn();
+    kanbanBoardManager = jest.fn() as unknown as KanbanBoardManager;
+    kanbanBoardManager.getAllBoards = jest.fn()
     kanban = jest.fn() as unknown as KanbanProvider;
+    kanban.getBoardManager = jest.fn().mockReturnValue(kanbanBoardManager);
     containerEl = jest.fn() as unknown as HTMLElement;
     containerEl.createDiv = jest.fn();
     containerEl.createEl = jest.fn();
@@ -144,6 +149,7 @@ describe('settings tab', () => {
   it('displays kanban settings', () => {
     jest.spyOn(plugin, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
     jest.spyOn(kanbanPlugin, 'isEnabled').mockReturnValue(true);
+    jest.spyOn(kanbanBoardManager, 'getAllBoards').mockReturnValue([]);
     const setNameSpy = jest.spyOn(Setting.prototype, 'setName');
 
     sut.display();

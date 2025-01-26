@@ -53,9 +53,6 @@ export default class AutoTasks extends Plugin {
     const workspace: ObsidianWorkspace = this.app.workspace;
     this.registerEvent(workspace.on(PERIODIC_NOTES_EVENT_SETTING_UPDATED, this.syncPeriodicNotesSettings.bind(this)));
     this.syncPeriodicNotesSettings();
-    this.kanban.resolveSettings(this.settings).then((newSettings: ISettings) => {
-      this.updateSettings(newSettings);
-    });
 
     // Copy tasks over when a new daily/weekly note is created
     this.registerEvent(this.app.vault.on('create', (file) => {

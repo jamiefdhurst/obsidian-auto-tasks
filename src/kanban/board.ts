@@ -4,14 +4,13 @@ export const UPCOMING = '## Upcoming';
 export const DUE = '## Due';
 export const PROGRESS = '## In progress';
 export const DONE = '## Done';
-export const PROPERTY_NAME: string = 'auto-tasks';
-export const PROPERTY_VALUE: string = 'default-board'
+export const KANBAN_PROPERTY_NAME: string = 'kanban-plugin';
+export const KANBAN_PROPERTY_VALUE: string = 'board';
 export const NAME: string = 'All Tasks';
 const HEADER: string = `
 ---
 
-kanban-plugin: board
-${PROPERTY_NAME}: ${PROPERTY_VALUE}
+${KANBAN_PROPERTY_NAME}: ${KANBAN_PROPERTY_VALUE}
 
 ---
 `.trim();
