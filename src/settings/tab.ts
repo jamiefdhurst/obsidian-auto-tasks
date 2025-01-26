@@ -3,6 +3,7 @@ import { IPeriodicity, ISettings } from '.';
 import AutoTasks from '..';
 import { KanbanProvider } from '../kanban/provider';
 import { KanbanPluginAdapter } from '../plugins/kanban';
+import { Suggest } from '../ui/suggest';
 import { capitalise } from '../utils';
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
@@ -112,7 +113,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
     } else {
 
       const syncSetting = new Setting(kanbanEl);
-      const fileReadOnlySetting = new Setting(kanbanEl);
+      const fileSetting = new Setting(kanbanEl);
 
       syncSetting
         .setName('Automatically synchronise tasks to Kanban board')
@@ -121,27 +122,35 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
           toggle
             .setValue(settings.kanbanSync)
             .onChange(async (val) => {
+              fileSetting.setDisabled(!val);
               settings.kanbanSync = val;
-              settings = await this.kanban.resolveSettings(settings);
-              fileReadOnlySetting.clear();
-              this.displayKanbanFile(fileReadOnlySetting, settings);
               await this.plugin.updateSettings(settings);
             });
         });
-      
-      this.displayKanbanFile(fileReadOnlySetting, settings);
-    }
-  }
 
-  private displayKanbanFile(settingComponent: Setting, settings: ISettings) {
-    settingComponent
+      const boards = this.kanban.getBoardManager().getAllBoards();    
+      fileSetting
         .setName('Primary Kanban board')
-        .setDesc('This is the Kanban board that will have tasks automatically added. '
-          + 'If you turn on Kanban sync above and this does not exist, it will be created for you.')
-        .addText((text) => {
-          text
-            .setDisabled(true)
-            .setValue(settings.kanbanFile);
+        .setDesc('This is the Kanban board that will have tasks automatically added.')
+        .addSearch((search) => {
+          search.setPlaceholder('Example: board.md')
+            .setValue(settings.kanbanFile)
+            .onChange(async (val) => {
+              search.inputEl.classList.remove('has-error');
+              if (boards.map(board => board.path).indexOf(val) === -1) {
+                search.inputEl.classList.add('has-error');
+              } else {
+                settings.kanbanFile = val;
+                await this.plugin.updateSettings(settings);
+              }
+            });
+
+            if (settings.kanbanSync && settings.kanbanFile === '') {
+              search.inputEl.classList.add('has-error');
+            }
+
+            new Suggest(this.app, boards, search.inputEl);
         });
+    }
   }
 }

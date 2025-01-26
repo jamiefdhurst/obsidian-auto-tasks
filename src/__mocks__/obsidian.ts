@@ -13,10 +13,14 @@ class BaseComponent {
   setDisabled(b: boolean) {
     return this;
   }
+  setPlaceholder(b: boolean) {
+    return this;
+  }
   setValue(s: string) {
     return this;
   }
 }
+export class SearchComponent extends BaseComponent {}
 export class TextComponent extends BaseComponent {}
 export class ToggleComponent extends BaseComponent {}
 
@@ -43,6 +47,11 @@ export class Setting {
     return this;
   }
 
+  addSearch(cb: (text: SearchComponent) => any) {
+    cb(new SearchComponent);
+    return this;
+  }
+
   addText(cb: (text: TextComponent) => any) {
     cb(new TextComponent);
     return this;
@@ -53,3 +62,9 @@ export class Setting {
     return this;
   }
 }
+
+export class AbstractInputSuggest<T> {
+  close(): void {
+    
+  }
+};

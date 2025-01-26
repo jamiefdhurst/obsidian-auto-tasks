@@ -27,27 +27,6 @@ export class KanbanProvider {
     this.watcher = watcher || new Watcher(this);
   }
 
-  async resolveSettings(settings: ISettings): Promise<ISettings> {
-    if (!settings.kanbanSync) {
-      return settings;
-    }
-
-    if (settings.kanbanFile === '') {
-      settings.kanbanFile = await this.boardManager.create();
-      return settings;
-    }
-
-    if (!this.boardManager.isValid(settings.kanbanFile)) {
-      try {
-        settings.kanbanFile = this.boardManager.resolve();
-      } catch (err) {
-        settings.kanbanFile = await this.boardManager.create();
-      }
-    }
-
-    return settings;
-  }
-
   async synchroniseTasks(files?: TFile[]): Promise<void> {
     const settings: ISettings = this.plugin.getSettings();
 
@@ -72,6 +51,10 @@ export class KanbanProvider {
     }
 
     return await this.boardManager.get(settings.kanbanFile);
+  }
+
+  getBoardManager(): KanbanBoardManager {
+    return this.boardManager;
   }
 
   getWatcher(): Watcher {

@@ -1,6 +1,6 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jest-environment-obsidian',
   verbose: true,
   preset: 'ts-jest',
   transform: {

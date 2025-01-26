@@ -1,7 +1,7 @@
 import { MetadataCache } from 'obsidian';
 import AutoTasks from 'src';
 import { KanbanBoard } from '../../kanban/board';
-import { KanbanBoardManager, KanbanBoardOpenError, KanbanBoardResolveError } from '../../kanban/board-manager';
+import { KanbanBoardManager, KanbanBoardOpenError } from '../../kanban/board-manager';
 import { KanbanProvider } from '../../kanban/provider';
 import { KanbanSynchroniser } from '../../kanban/synchroniser';
 import { Watcher } from '../../kanban/watcher';
@@ -43,62 +43,6 @@ describe('kanban provider', () => {
     sut = new KanbanProvider(plugin, vault, metadataCache);
 
     expect(sut).toBeInstanceOf(KanbanProvider);
-  });
-
-  it('does not resolve with kanban disabled', async () => {
-    settings.kanbanSync = false;
-    boardManager.create = jest.fn();
-    const boardManagerCreate = jest.spyOn(boardManager, 'create');
-
-    const result = await sut.resolveSettings(settings);
-
-    expect(boardManagerCreate).not.toHaveBeenCalled();
-    expect(result).toEqual(settings);
-  });
-
-  it('creates a new board when missing', async () => {
-    settings.kanbanSync = true;
-    settings.kanbanFile = '';
-    boardManager.create = jest.fn();
-    const boardManagerCreate = jest.spyOn(boardManager, 'create').mockImplementation(async () => 'example.md');
-
-    const result = await sut.resolveSettings(settings);
-
-    expect(boardManagerCreate).toHaveBeenCalled();
-    expect(result.kanbanFile).toEqual('example.md');
-  });
-
-  it('when file is invalid, resolves correctly', async () => {
-    settings.kanbanSync = true;
-    settings.kanbanFile = 'example.md';
-    boardManager.isValid = jest.fn();
-    const boardManagerIsValid = jest.spyOn(boardManager, 'isValid').mockImplementation(() => false);
-    boardManager.resolve = jest.fn();
-    const boardManagerResolve = jest.spyOn(boardManager, 'resolve').mockImplementation(() => 'correct.md');
-
-    const result = await sut.resolveSettings(settings);
-
-    expect(boardManagerIsValid).toHaveBeenCalled();
-    expect(boardManagerResolve).toHaveBeenCalled();
-    expect(result.kanbanFile).toEqual('correct.md');
-  });
-
-  it('when file is invalid and cannot resolve, creates a new one', async () => {
-    settings.kanbanSync = true;
-    settings.kanbanFile = 'example.md';
-    boardManager.isValid = jest.fn();
-    const boardManagerIsValid = jest.spyOn(boardManager, 'isValid').mockImplementation(() => false);
-    boardManager.resolve = jest.fn();
-    const boardManagerResolve = jest.spyOn(boardManager, 'resolve').mockImplementationOnce(() => { throw new KanbanBoardResolveError(); });
-    boardManager.create = jest.fn();
-    const boardManagerCreate = jest.spyOn(boardManager, 'create').mockImplementation(async () => 'newfile.md');
-
-    const result = await sut.resolveSettings(settings);
-
-    expect(boardManagerIsValid).toHaveBeenCalled();
-    expect(boardManagerResolve).toHaveBeenCalled();
-    expect(boardManagerCreate).toHaveBeenCalled();
-    expect(result.kanbanFile).toEqual('newfile.md');
   });
 
   it('does not synchronise when kanban is disabled', async () => {
@@ -169,6 +113,10 @@ describe('kanban provider', () => {
     const result = await sut.getBoard();
 
     expect(result).toEqual(board);
+  });
+
+  it('gets board manager', () => {
+    expect(sut.getBoardManager()).toEqual(boardManager);
   });
 
   it('gets watcher', () => {

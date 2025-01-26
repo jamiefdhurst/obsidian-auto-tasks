@@ -1,7 +1,7 @@
-import { CachedMetadata, FrontMatterCache, MetadataCache, TFile, Vault } from 'obsidian';
-import { KanbanBoardManager, KanbanBoardOpenError, KanbanBoardResolveError } from '../../kanban/board-manager';
+import { FrontMatterCache, MetadataCache, TFile } from 'obsidian';
+import { KANBAN_PROPERTY_NAME, KANBAN_PROPERTY_VALUE } from '../../kanban/board';
+import { KanbanBoardManager, KanbanBoardOpenError } from '../../kanban/board-manager';
 import { ObsidianVault } from '../../types';
-import { PROPERTY_NAME, PROPERTY_VALUE } from '../../kanban/board';
 
 describe('kanban board-manager', () => {
 
@@ -23,104 +23,36 @@ describe('kanban board-manager', () => {
     sut = new KanbanBoardManager(vault, metadataCache);
   });
 
-  it('throws error when it cannot resolve a board', () => {
-    vault.getFiles = jest.fn();
-    jest.spyOn(vault, 'getFiles').mockImplementation(() => {
-      return [];
-    });
+  it('returns nothing when it can\'t find any boards', () => {
+    vault.getFiles = jest.fn().mockReturnValue([new TFile()]);
+    metadataCache.getFileCache = jest.fn().mockReturnValue(null);
 
-    expect(() => {
-      sut.resolve();
-    }).toThrow(KanbanBoardResolveError);
+    const result = sut.getAllBoards();
+
+    expect(result).toEqual([]);
   });
 
-  it('resolves the default board correctly', () => {
-    vault.getFiles = jest.fn();
-    jest.spyOn(vault, 'getFiles').mockImplementation(() => {
-      return [dummyFile];
-    });
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
+  it('returns all valid boards with valid frontcache properties', () => {
+    const files = [new TFile(), new TFile(), new TFile(), new TFile()];
+    files[0].path = 'example-1.md';
+    files[1].path = 'example-2.md';
+    files[2].path = 'example-3.md';
+    files[3].path = 'example-4.md';
+    vault.getFiles = jest.fn().mockReturnValue(files);
+    const frontmatter1: FrontMatterCache = {}
+    const frontmatter2: FrontMatterCache = {}
+    const frontmatter3: FrontMatterCache = {}
+    frontmatter2[KANBAN_PROPERTY_NAME] = 'foobar';
+    frontmatter3[KANBAN_PROPERTY_NAME] = KANBAN_PROPERTY_VALUE;
+    metadataCache.getFileCache = jest.fn().mockReturnValueOnce({frontmatter: undefined})
+      .mockReturnValueOnce({frontmatter: frontmatter1})
+      .mockReturnValueOnce({frontmatter: frontmatter2})
+      .mockReturnValueOnce({frontmatter: frontmatter3});
 
-    const frontmatter: FrontMatterCache = [];
-    frontmatter[`${PROPERTY_NAME}`] = PROPERTY_VALUE;
-    const metadata: CachedMetadata = {frontmatter};
-    metadataCache.getFileCache = jest.fn();
-    jest.spyOn(metadataCache, 'getFileCache').mockImplementation((_) => metadata);
+    const result = sut.getAllBoards();
 
-    const board = sut.resolve();
-    
-    expect(board).toEqual('example.md');
-  });
-
-  it('returns invalid for a file that cannot be loaded', () => {
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => null);
-
-    expect(sut.isValid('example.md')).toBe(false);
-  });
-
-  it('returns invalid for a file that has no file cache', () => {
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
-    metadataCache.getFileCache = jest.fn();
-    jest.spyOn(metadataCache, 'getFileCache').mockImplementation((_) => null);
-
-    expect(sut.isValid('example.md')).toBe(false);
-  });
-
-  it('returns invalid for a file that has no frontmatter cache', () => {
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
-    const metadata: CachedMetadata = {frontmatter: undefined};
-    metadataCache.getFileCache = jest.fn();
-    jest.spyOn(metadataCache, 'getFileCache').mockImplementation((_) => metadata);
-
-    expect(sut.isValid('example.md')).toBe(false);
-  });
-
-  it('returns invalid for a file that does not have the correct metadata property', () => {
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
-    const frontmatter: FrontMatterCache = [];
-    const metadata: CachedMetadata = {frontmatter};
-    metadataCache.getFileCache = jest.fn();
-    jest.spyOn(metadataCache, 'getFileCache').mockImplementation((_) => metadata);
-
-    expect(sut.isValid('example.md')).toBe(false);
-  });
-
-  it('returns invalid for a file that has the wrong metadata property', () => {
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
-    const frontmatter: FrontMatterCache = [];
-    frontmatter[`${PROPERTY_NAME}`] = 'foo';
-    const metadata: CachedMetadata = {frontmatter};
-    metadataCache.getFileCache = jest.fn();
-    jest.spyOn(metadataCache, 'getFileCache').mockImplementation((_) => metadata);
-
-    expect(sut.isValid('example.md')).toBe(false);
-  });
-
-  it('returns valid for the default board', () => {
-    vault.getFileByPath = jest.fn();
-    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
-    const frontmatter: FrontMatterCache = [];
-    frontmatter[`${PROPERTY_NAME}`] = PROPERTY_VALUE;
-    const metadata: CachedMetadata = {frontmatter};
-    metadataCache.getFileCache = jest.fn();
-    jest.spyOn(metadataCache, 'getFileCache').mockImplementation((_) => metadata);
-
-    expect(sut.isValid('example.md')).toBe(true);
-  });
-
-  it('creates a new board', async () => {
-    vault.create = jest.fn();
-    jest.spyOn(vault, 'create').mockImplementation(async (path, data, _) => dummyFile);
-
-    const board = await sut.create();
-
-    expect(board).toBe('example.md');
+    expect(result.length).toEqual(1);
+    expect(result[0].path).toEqual('example-4.md');
   });
 
   it('returns an error when the board cannot be loaded', async () => {

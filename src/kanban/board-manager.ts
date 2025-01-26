@@ -1,5 +1,5 @@
-import { FrontMatterCache, MetadataCache, TFile } from 'obsidian';
-import { KanbanBoard, NAME, PROPERTY_NAME, PROPERTY_VALUE } from './board';
+import { MetadataCache, TFile } from 'obsidian';
+import { KANBAN_PROPERTY_NAME, KANBAN_PROPERTY_VALUE, KanbanBoard } from './board';
 import { ObsidianVault } from 'src/types';
 
 export class KanbanBoardManager {
@@ -12,49 +12,31 @@ export class KanbanBoardManager {
     this.metadataCache = metadataCache;
   }
 
-  resolve(): string {
+  getAllBoards(): TFile[] {
+    const boards: TFile[] = [];
     for (const file of this.vault.getFiles()) {
-      if (this.isValid(file.name)) {
-        return file.name;
+      if (this.isBoard(file)) {
+        boards.push(file);
       }
     }
 
-    throw new KanbanBoardResolveError();
+    return boards;
   }
 
-  isValid(fileName: string): boolean {
-    const file = this.vault.getFileByPath(fileName);
-    if (file !== null) {
-      return this.isValidByFile(file);
-    }
-
-    return false;
-  }
-
-  private isValidByFile(file: TFile): boolean {
+  private isBoard(file: TFile): boolean {
     const fileCache = this.metadataCache.getFileCache(file);
-    
-    return fileCache !== null && this.isDefaultBoard(fileCache.frontmatter);
-  }
 
-  private isDefaultBoard(frontmatter: FrontMatterCache | undefined): boolean {
-    if (frontmatter === undefined) {
+    if (fileCache === null) {
       return false;
     }
-    if (typeof frontmatter[PROPERTY_NAME] === 'undefined') {
+    if (fileCache.frontmatter === undefined) {
       return false;
     }
-    if (frontmatter[PROPERTY_NAME] !== PROPERTY_VALUE) {
+    if (typeof fileCache.frontmatter[KANBAN_PROPERTY_NAME] === 'undefined') {
       return false;
     }
-    return true;
-  }
 
-  async create(): Promise<string> {
-    const fileName = `${NAME}.md`;
-    const file = await this.vault.create(fileName, (new KanbanBoard(fileName)).toString());
-
-    return file.name;
+    return fileCache.frontmatter[KANBAN_PROPERTY_NAME] === KANBAN_PROPERTY_VALUE;
   }
 
   async get(fileName: string): Promise<KanbanBoard> {
@@ -68,4 +50,3 @@ export class KanbanBoardManager {
 }
 
 export class KanbanBoardOpenError extends Error {}
-export class KanbanBoardResolveError extends Error {}
