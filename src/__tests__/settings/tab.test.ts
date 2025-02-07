@@ -1,10 +1,10 @@
-import { App, Setting } from 'obsidian';
+import { App, Setting, Vault } from 'obsidian';
 import AutoTasks from '../..';
+import { KanbanBoardManager } from '../../kanban/board-manager';
 import { KanbanProvider } from '../../kanban/provider';
 import { KanbanPluginAdapter } from '../../plugins/kanban';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { AutoTasksSettingsTab } from '../../settings/tab';
-import { KanbanBoardManager } from '../../kanban/board-manager';
 
 describe('settings tab', () => {
 
@@ -13,12 +13,13 @@ describe('settings tab', () => {
   let kanbanPlugin: KanbanPluginAdapter;
   let kanban: KanbanProvider;
   let kanbanBoardManager: KanbanBoardManager;
-  let containerEl: HTMLElement;
 
   let sut: AutoTasksSettingsTab;
 
   beforeEach(() => {
     app = jest.fn() as unknown as App;
+    app.vault = jest.fn() as unknown as Vault;
+    app.vault.getAllFolders = jest.fn();
     plugin = jest.fn() as unknown as AutoTasks;
     plugin.getSettings = jest.fn();
     kanbanPlugin = jest.fn() as unknown as KanbanPluginAdapter;
@@ -27,20 +28,9 @@ describe('settings tab', () => {
     kanbanBoardManager.getAllBoards = jest.fn()
     kanban = jest.fn() as unknown as KanbanProvider;
     kanban.getBoardManager = jest.fn().mockReturnValue(kanbanBoardManager);
-    containerEl = jest.fn() as unknown as HTMLElement;
-    containerEl.createDiv = jest.fn();
-    containerEl.createEl = jest.fn();
-    containerEl.empty = jest.fn();
-    const divEl = jest.fn() as unknown as HTMLDivElement;
-    divEl.createDiv = jest.fn();
-    divEl.createEl = jest.fn();
-    jest.spyOn(divEl, 'createDiv').mockReturnValue(jest.fn() as unknown as HTMLDivElement);
-    jest.spyOn(divEl, 'createEl').mockReturnValue(jest.fn() as unknown as HTMLElement);
-    jest.spyOn(containerEl, 'createDiv').mockReturnValue(divEl);
-    jest.spyOn(containerEl, 'createEl').mockReturnValue(jest.fn() as unknown as HTMLElement);
 
     sut = new AutoTasksSettingsTab(app, plugin, kanbanPlugin, kanban);
-    sut.containerEl = containerEl;
+    sut.containerEl = createDiv();
   });
 
   afterEach(() => {
@@ -150,6 +140,7 @@ describe('settings tab', () => {
     jest.spyOn(plugin, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
     jest.spyOn(kanbanPlugin, 'isEnabled').mockReturnValue(true);
     jest.spyOn(kanbanBoardManager, 'getAllBoards').mockReturnValue([]);
+    jest.spyOn(app.vault, 'getAllFolders').mockReturnValue([]);
     const setNameSpy = jest.spyOn(Setting.prototype, 'setName');
 
     sut.display();

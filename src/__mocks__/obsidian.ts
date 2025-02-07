@@ -31,7 +31,12 @@ export const Notice = jest.fn();
 
 // Mock the Setting class
 export class Setting {
+  settingEl: HTMLElement;
+  controlEl: HTMLElement;
+
   constructor(el: HTMLElement) {
+    this.settingEl = el.createDiv();
+    this.controlEl = el.createDiv();
     return this;
   }
 

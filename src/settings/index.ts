@@ -13,6 +13,7 @@ export interface IPeriodicitySettings {
 export interface ISettings {
   kanbanSync: boolean;
   kanbanFile: string;
+  kanbanIgnoreFolders: string[];
   tasksAvailable: boolean;
   daily: IPeriodicitySettings;
   weekly: IPeriodicitySettings;
@@ -21,6 +22,7 @@ export interface ISettings {
 export const DEFAULT_SETTINGS: ISettings = Object.freeze({
   kanbanSync: false,
   kanbanFile: '',
+  kanbanIgnoreFolders: [],
   tasksAvailable: false,
   daily: {
     addDue: false,
