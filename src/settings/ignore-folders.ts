@@ -37,18 +37,15 @@ export class IgnoreFolders {
       const existingWrapperEl = this.foldersContainerEl.createDiv({cls: 'at--setting-existing-wrapper'});
       const existingItemEl = existingWrapperEl.createDiv({cls: 'at--setting-existing-item'});
       const existingItemControlsEl = existingItemEl.createDiv({cls: 'at--setting-existing-controls'});
-      existingItemControlsEl.createEl('input', {type: 'text', value: folder})
-        .setAttribute('readonly', 'readonly');
+      const existingItemInputEl = existingItemControlsEl.createEl('input', {type: 'text'});
+      existingItemInputEl.setAttribute('readonly', 'readonly');
+      existingItemInputEl.setAttribute('value', folder);
       const existingItemButtonsEl = existingItemEl.createDiv({cls: 'at--setting-existing-buttons'});
       const deleteEl = existingItemButtonsEl.createEl('a');
       setIcon(deleteEl, 'lucide-trash-2');
       deleteEl.setAttribute('data-folder', folder);
       deleteEl.addEventListener('click', (event: MouseEvent) => {
-        let el = event.target as HTMLElement;
-        if (el.tagName === 'svg') {
-          el = el.parentElement as HTMLElement;
-        }
-        this.handleRemoveFolder(el.getAttribute('data-folder') || '');
+        this.handleRemoveFolder(folder);
         event.stopPropagation();
       });
     }

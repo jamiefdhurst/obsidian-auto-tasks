@@ -1,6 +1,8 @@
 import { moment, TFile } from 'obsidian';
+import AutoTasks from '../..';
 import { DONE, DUE, KanbanBoard, PROGRESS, UPCOMING } from '../../kanban/board';
 import { KanbanSynchroniser } from '../../kanban/synchroniser';
+import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { DUE_DATE_FORMAT } from '../../tasks/task';
 import { ObsidianVault } from '../../types';
 
@@ -10,10 +12,15 @@ describe('kanban synchroniser', () => {
 
   let sut: KanbanSynchroniser;
 
+  let plugin: AutoTasks;
+  let settings: ISettings;
   let vault: ObsidianVault;
   let board: KanbanBoard;
 
   beforeEach(() => {
+    settings = Object.assign({}, DEFAULT_SETTINGS);
+    plugin = jest.fn() as unknown as AutoTasks;
+    plugin.getSettings = jest.fn().mockReturnValue(settings);
     vault = jest.fn() as unknown as ObsidianVault;
     vault.getFileByPath = jest.fn();
     jest.spyOn(vault, 'getFileByPath').mockReturnValue(new TFile());
@@ -21,7 +28,7 @@ describe('kanban synchroniser', () => {
     vault.modify = jest.fn();
     vault.read = jest.fn();
 
-    sut = new KanbanSynchroniser(vault);
+    sut = new KanbanSynchroniser(plugin, vault);
   });
 
   it('retrieves files with empty list and performs with empty list', async () => {
@@ -35,6 +42,26 @@ describe('kanban synchroniser', () => {
 
     expect(vaultModify).toHaveBeenCalledTimes(2);
     expect(boardGetTaskCollection).toHaveBeenCalledTimes(2);
+  });
+
+  it('excludes ignored folders', async () => {
+    settings.kanbanIgnoreFolders = ['ignored', 'some/other'];
+    const file1 = new TFile();
+    file1.path = 'ignored/file1.md';
+    const file2 = new TFile();
+    file2.path = 'ignored/subpath/file2.md';
+    const file3 = new TFile();
+    file3.path = 'elsewhere/file3.md';
+    const vaultModify = jest.spyOn(vault, 'modify');
+    board = new KanbanBoard(BOARD_FILENAME);
+    const boardGetTaskCollection = jest.spyOn(board, 'getTaskCollection');
+    const vaultRead = jest.spyOn(vault, 'read').mockResolvedValue('');
+
+    await sut.process(board, [file1, file2, file3]);
+
+    expect(boardGetTaskCollection).toHaveBeenCalledTimes(2);
+    expect(vaultRead).toHaveBeenCalledTimes(1);
+    expect(vaultModify).toHaveBeenCalled();
   });
 
   it('ignores the provided board file', async () => {
