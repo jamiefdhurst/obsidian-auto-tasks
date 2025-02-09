@@ -1,11 +1,14 @@
 import * as momentImpl from 'moment';
 
 export class PluginSettingTab {}
-export class TAbstractFile {}
+export class TAbstractFile {
+  public name!: string;
+  public path!: string;
+}
 export class TFile extends TAbstractFile {
   public basename!: string;
-  public name!: string;
 }
+export class TFolder extends TAbstractFile {}
 class BaseComponent {
   onChange(cb: (val: any) => any) {
     return this;
@@ -31,7 +34,12 @@ export const Notice = jest.fn();
 
 // Mock the Setting class
 export class Setting {
+  settingEl: HTMLElement;
+  controlEl: HTMLElement;
+
   constructor(el: HTMLElement) {
+    this.settingEl = el.createDiv();
+    this.controlEl = el.createDiv();
     return this;
   }
 
@@ -68,3 +76,8 @@ export class AbstractInputSuggest<T> {
     
   }
 };
+
+export function setIcon(el: HTMLElement, icon: string): void {
+  const svg = el.createSvg('svg', {cls: 'icon'});
+  svg.setAttribute('data-icon', icon);
+}

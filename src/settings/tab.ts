@@ -1,18 +1,21 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, Vault } from 'obsidian';
 import { IPeriodicity, ISettings } from '.';
 import AutoTasks from '..';
 import { KanbanProvider } from '../kanban/provider';
 import { KanbanPluginAdapter } from '../plugins/kanban';
 import { Suggest } from '../ui/suggest';
 import { capitalise } from '../utils';
+import { IgnoreFolders } from './ignore-folders';
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
+  private vault: Vault;
   private plugin: AutoTasks;
   private kanbanPlugin: KanbanPluginAdapter;
   private kanban: KanbanProvider;
 
   constructor(app: App, plugin: AutoTasks, kanbanPlugin: KanbanPluginAdapter, kanban: KanbanProvider) {
     super(app, plugin);
+    this.vault = app.vault;
     this.plugin = plugin;
     this.kanbanPlugin = kanbanPlugin;
     this.kanban = kanban;
@@ -114,6 +117,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
 
       const syncSetting = new Setting(kanbanEl);
       const fileSetting = new Setting(kanbanEl);
+      const ignoreFoldersSetting = new Setting(kanbanEl);
 
       syncSetting
         .setName('Automatically synchronise tasks to Kanban board')
@@ -151,6 +155,13 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
 
             new Suggest(this.app, boards, search.inputEl);
         });
+
+      ignoreFoldersSetting
+        .setName('Folder(s) to ignore')
+        .setDesc('Select folders to ignore reading tasks from when syncing to the Kanban board.');
+      new IgnoreFolders(this.app, this.plugin, ignoreFoldersSetting.settingEl.createDiv({cls: 'at--setting'}), this.vault.getAllFolders()).display();
+      ignoreFoldersSetting.controlEl.remove();
+      ignoreFoldersSetting.settingEl.classList.add('at--setting-item')
     }
   }
 }

@@ -23,7 +23,7 @@ export class KanbanProvider {
   ) {
     this.plugin = plugin;
     this.boardManager = boardManager || new KanbanBoardManager(vault, metadataCache);
-    this.synchroniser = synchroniser || new KanbanSynchroniser(vault);
+    this.synchroniser = synchroniser || new KanbanSynchroniser(plugin, vault);
     this.watcher = watcher || new Watcher(this);
   }
 

@@ -3,11 +3,15 @@ import { TaskCollection } from '../tasks/collection';
 import { Task } from '../tasks/task';
 import { ObsidianVault } from '../types';
 import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
+import AutoTasks from 'src';
+import { ISettings } from 'src/settings';
 
 export class KanbanSynchroniser {
+  private plugin: AutoTasks;
   private vault: ObsidianVault;
 
-  constructor(vault: ObsidianVault) {
+  constructor(plugin: AutoTasks, vault: ObsidianVault) {
+    this.plugin = plugin;
     this.vault = vault;
   }
 
@@ -16,6 +20,18 @@ export class KanbanSynchroniser {
     if (!files || !files.length) {
       files = this.vault.getFiles();
     }
+
+    // Filter out the ignored files
+    const settings: ISettings = this.plugin.getSettings();
+    files = files.filter(file => {
+      let valid = true;
+      settings.kanbanIgnoreFolders.forEach(folder => {
+        if (file.path.startsWith(folder + '/')) {
+          valid = false;
+        }
+      });
+      return valid;
+    });
 
     for (const file of files) {
       if (file.name !== board.getFileName()) {

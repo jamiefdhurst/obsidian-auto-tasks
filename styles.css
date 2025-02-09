@@ -1,0 +1,61 @@
+.at--setting {
+  width: 100%;
+}
+
+.at--setting-item {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 1rem;
+}
+
+.at--setting-folders-container {
+  margin-bottom: 1rem;
+}
+
+.at--setting-existing-wrapper {
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.at--setting-existing-item {
+  align-items: flex-start;
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  display: flex;
+  font-size: 16px;
+  padding: 12px;
+  width: 100%;
+}
+
+.at--setting-existing-controls {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.at--setting-existing-buttons {
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  max-width: 25px;
+  padding-top: 5px;
+}
+
+.at--setting-existing-buttons > a {
+  color: var(--text-muted);
+}
+
+.at--setting-existing-buttons > a:hover {
+  color: var(--text-normal);
+}
+
+.at--setting-controls-wrapper {
+  margin-block: 1rem;
+  margin-block-start: 0;
+  margin-inline: 0;
+}
+
+.at--setting-controls-wrapper > input {
+  margin-inline-end: 10px;
+}
