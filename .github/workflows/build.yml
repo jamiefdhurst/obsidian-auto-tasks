@@ -60,8 +60,8 @@ jobs:
         if: ${{ contains(steps.latest.outputs.name, '.') }}
         uses: datamonsters/replace-action@v2
         with:
-          files: 'package.json'
-          replacements: "${{ steps.latest_clean.outputs.name }}=${{ steps.version.outputs.value }}"
+          files: 'package.json,package-lock.json'
+          replacements: "\"version\": \"${{ steps.latest_clean.outputs.name }}\"=\"version\": \"${{ steps.version.outputs.value }}\""
       - name: Update Version Script
         if: ${{ contains(steps.latest.outputs.name, '.') }}
         run: VERSION=${{ steps.version.outputs.value }} npm run version
