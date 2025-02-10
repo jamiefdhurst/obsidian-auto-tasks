@@ -74,7 +74,7 @@ jobs:
         with:
           find: "\"version\": \"${{ steps.latest_clean.outputs.name }}\""
           replace: "\"version\": \"${{ steps.version.outputs.value }}\""
-          include: "package*json"
+          include: "package.json"
       - name: Update Version Script
         if: ${{ contains(steps.latest.outputs.name, '.') }}
         run: VERSION=${{ steps.version.outputs.value }} npm run version
