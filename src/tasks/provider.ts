@@ -50,7 +50,13 @@ export class TasksProvider {
       }
       
       // Add them into the new entry
-      await this.vault.process(cls.getCurrent(), (contents) => `${contents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`)
+      await this.vault.process(cls.getCurrent(), (contents) => {
+        if (contents.indexOf(periodicitySetting.header + '\n') > -1) {
+          return contents.replace(periodicitySetting.header + '\n', `${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}\n`);
+        }
+
+        return `${contents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`;
+      });
     }
   }
 }

@@ -177,4 +177,31 @@ describe('tasks provider', () => {
     expect(result).toEqual(`\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`)
   });
 
+  it('adds any missing tasks under an existing header if it exists', async () => {
+    settings.daily.available = true;
+    settings.daily.carryOver = true;
+    settings.daily.addDue = true;
+    settings.daily.header = '## Daily TODOs';
+    settings.tasksAvailable = true;
+    settings.kanbanSync = true;
+    settings.kanbanFile = 'board.md';
+    jest.spyOn(dailyNote, 'getNextDate').mockReturnValue(moment().startOf('day').add(1, 'day'));
+    jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+    jest.spyOn(vault, 'read').mockResolvedValueOnce(`## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`);
+    const board: KanbanBoard = new KanbanBoard('board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
+    jest.spyOn(kanban, 'getBoard').mockResolvedValueOnce(board);
+    const currentFile = new TFile();
+    jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+    let result;
+    const vaultProcess = jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+      result = fn('Some existing contents...\n\n## Daily TODOs\n\n## Some other content\n\nAnd something else...');
+      return Promise.resolve(result)
+    });
+
+    await sut.checkAndCopyTasks(settings, new TFile());
+
+    expect(vaultProcess).toHaveBeenCalledWith(currentFile, expect.any(Function));
+    expect(result).toEqual(`Some existing contents...\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n## Some other content\n\nAnd something else...`)
+  });
+
 });
