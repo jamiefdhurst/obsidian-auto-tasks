@@ -1,6 +1,7 @@
 name: Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'main'
@@ -56,18 +57,24 @@ jobs:
         run: |
           export version=$(echo ${{ steps.latest.outputs.name }} | sed 's/^v//')
           echo ::set-output name=name::$version
-      - name: Update Version in Files (1)
-        if: ${{ contains(steps.latest.outputs.name, '.') }}
-        uses: datamonsters/replace-action@v2
+      # - name: Update Version in Files (1)
+      #   if: ${{ contains(steps.latest.outputs.name, '.') }}
+      #   uses: datamonsters/replace-action@v2
+      #   with:
+      #     files: 'package.json'
+      #     replacements: "${{ steps.latest_clean.outputs.name }}=${{ steps.version.outputs.value }}"
+      # - name: Update Version in Files (2)
+      #   if: ${{ contains(steps.latest.outputs.name, '.') }}
+      #   uses: datamonsters/replace-action@v2
+      #   with:
+      #     files: 'package-lock.json'
+      #     replacements: "${{ steps.latest_clean.outputs.name }}=${{ steps.version.outputs.value }}"
+      - name: Update Version in Files
+        uses: jacobtomlinson/gha-find-replace@v3
         with:
-          files: 'package.json'
-          replacements: "${{ steps.latest_clean.outputs.name }}=${{ steps.version.outputs.value }}"
-      - name: Update Version in Files (2)
-        if: ${{ contains(steps.latest.outputs.name, '.') }}
-        uses: datamonsters/replace-action@v2
-        with:
-          files: 'package-lock.json'
-          replacements: "${{ steps.latest_clean.outputs.name }}=${{ steps.version.outputs.value }}"
+          find: "\"version\": \"${{ steps.latest_clean.outputs.name }}\""
+          replace: "\"version\": \"${{ steps.version.outputs.value }}\""
+          include: "package*json"
       - name: Update Version Script
         if: ${{ contains(steps.latest.outputs.name, '.') }}
         run: VERSION=${{ steps.version.outputs.value }} npm run version
