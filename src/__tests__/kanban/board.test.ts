@@ -1,8 +1,15 @@
+import AutoTasks from '../..';
 import { KanbanBoard } from '../../kanban/board';
+import { DEFAULT_SETTINGS } from '../../settings';
 
 describe('kanban board', () => {
 
   let sut: KanbanBoard;
+
+    beforeAll(() => {
+      jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
+    });
+  
 
   it('initialises without contents using defaults', () => {
     sut = new KanbanBoard('example.md');

@@ -48,6 +48,11 @@ export class TasksProvider {
           }
         }
       }
+
+      // Add the carry over prefix if its set
+      if (settings.carryOverPrefix) {
+        tasksToAdd = tasksToAdd.map(task => task.markCarriedOver());
+      }
       
       // Add them into the new entry
       await this.vault.process(cls.getCurrent(), (contents) => {

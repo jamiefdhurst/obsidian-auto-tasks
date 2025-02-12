@@ -47,13 +47,28 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
         .setDesc('Download and enable the Tasks plugin to enable due date functionality within your tasks and TODOs.');
     }
 
+    new Setting(this.containerEl)
+      .setName('All tasks')
+      .setHeading();
+
+    new Setting(this.containerEl)
+      .setName('Prefix for carried over tasks')
+      .setDesc('The prefix to add to any carried over tasks, e.g. "[>]".')
+      .addText((text) => {
+        text
+          .setValue(settings.carryOverPrefix)
+          .onChange(async (val) => {
+            settings.carryOverPrefix = val;
+            await this.plugin.updateSettings(settings);
+          });
+        });
+
     for (const periodicity of periodicities) {
       if (settings[periodicity].available) {
         new Setting(this.containerEl)
           .setName(`${capitalise(periodicity)} notes`)
           .setHeading();
         new Setting(this.containerEl)
-          .setHeading()
           .setName(`Carry over ${periodicity} tasks`)
           .setDesc(`Whether any ${periodicity} tasks that are incomplete should be automatically carried over to the following note.`)
           .addToggle((toggle) => {

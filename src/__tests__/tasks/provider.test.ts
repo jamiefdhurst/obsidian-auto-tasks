@@ -1,4 +1,5 @@
 import { moment, TFile } from 'obsidian';
+import AutoTasks from '../..';
 import { DONE, DUE, KanbanBoard, PROGRESS, UPCOMING } from '../../kanban/board';
 import { KanbanProvider } from '../../kanban/provider';
 import DailyNote from '../../notes/daily-note';
@@ -31,6 +32,7 @@ describe('tasks provider', () => {
     dailyNote.isValid = jest.fn();
     weeklyNote = jest.fn() as unknown as WeeklyNote;
     settings = Object.assign({}, DEFAULT_SETTINGS);
+    jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(settings);
 
     sut = new TasksProvider(vault, kanban, dailyNote, weeklyNote);
   });
@@ -88,7 +90,28 @@ describe('tasks provider', () => {
     await sut.checkAndCopyTasks(settings, new TFile());
 
     expect(vaultProcess).toHaveBeenCalledWith(currentFile, expect.any(Function));
-    expect(result).toEqual(`\n\n## Daily TODOs\n\n- [ ] Incomplete 1\n- [ ] Incomplete 2`)
+    expect(result).toEqual(`\n\n## Daily TODOs\n\n- [ ] Incomplete 1\n- [ ] Incomplete 2`);
+  });
+
+  it('copies tasks and adds carried over prefix', async () => {
+    settings.daily.available = true;
+    settings.daily.carryOver = true;
+    settings.carryOverPrefix = '[>]';
+    settings.daily.header = '## Daily TODOs';
+    jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+    jest.spyOn(vault, 'read').mockResolvedValueOnce('## TODOs\n\n- [x] Complete 1\n- [ ] [>] Incomplete 1\n- [ ] Incomplete 2');
+    const currentFile = new TFile();
+    jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+    let result;
+    const vaultProcess = jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+      result = fn('');
+      return Promise.resolve(result)
+    });
+
+    await sut.checkAndCopyTasks(settings, new TFile());
+
+    expect(vaultProcess).toHaveBeenCalledWith(currentFile, expect.any(Function));
+    expect(result).toEqual(`\n\n## Daily TODOs\n\n- [ ] [>] Incomplete 1\n- [ ] [>] Incomplete 2`);
   });
 
   it('does not pull from kanban when not available', async () => {

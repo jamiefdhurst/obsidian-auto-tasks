@@ -82,6 +82,16 @@ describe('settings tab', () => {
     expect(setNameSpy).not.toHaveBeenCalledWith('Tasks due date support');
   });
 
+  it('displays all tasks settings', () => {
+    jest.spyOn(plugin, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
+    const setNameSpy = jest.spyOn(Setting.prototype, 'setName');
+
+    sut.display();
+
+    expect(setNameSpy).toHaveBeenCalledWith('All tasks');
+    expect(setNameSpy).toHaveBeenCalledWith('Prefix for carried over tasks');
+  });
+
   it('displays settings for daily periodicity', () => {
     const settings: ISettings = Object.assign({}, DEFAULT_SETTINGS);
     settings.daily.available = true;
