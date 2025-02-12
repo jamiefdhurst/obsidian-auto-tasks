@@ -1,18 +1,29 @@
 import { moment } from 'obsidian';
+import AutoTasks from '../../';
 import { DONE, DUE, PROGRESS, UPCOMING } from '../../kanban/board';
+import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { TaskCollection } from '../../tasks/collection';
 import { DUE_DATE_FORMAT, Task } from '../../tasks/task';
 
 describe('task collection', () => {
 
+  let settings: ISettings;
   let sut: TaskCollection;
 
-  it('parses tasks correctly', () => {
-    sut = new TaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+  beforeEach(() => {
+    settings = Object.assign({}, DEFAULT_SETTINGS);
 
-    expect(sut.getAllTasks().length).toEqual(4);
+    jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(settings);
+  });
+
+  it('parses tasks correctly', () => {
+    settings.carryOverPrefix = '[>]';
+    sut = new TaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n');
+
+    expect(sut.getAllTasks().length).toEqual(5);
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
-    expect(sut.getTasksFromLists(['## Header 2']).length).toEqual(2);
+    expect(sut.getTasksFromLists(['## Header 2']).length).toEqual(3);
+    expect(sut.getAllTasks()[4].getName()).toEqual('Task 5');
   });
 
   it('adds board headers', () => {
@@ -166,13 +177,14 @@ describe('task collection', () => {
   });
 
   it('converts collection to string format', () => {
-    sut = new TaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    settings.carryOverPrefix = '[>]';
+    sut = new TaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n');
 
     const result1 = sut.toString('\n\n\n');
     const result2 = sut.toString();
 
-    expect(result1).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n\n\n\n');
-    expect(result2).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n\n');
+    expect(result1).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n\n\n');
+    expect(result2).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n');
   });
 
 });

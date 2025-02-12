@@ -1,15 +1,16 @@
 import { Moment } from 'moment';
 import { moment } from 'obsidian';
+import AutoTasks from '..';
 
 const METADATA_CHARS: string = '📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅';
 const TASK_COMPLETE: RegExp = /^-\s\[x\]/;
 const TASK_DUE_DATE: RegExp = /\s📅\s(\d{4}-\d{2}-\d{2})/;
 const TASK_NAME: RegExp = /^(-\s\[[x\s]\]\s)(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|$)/;
-const TOMORROW: Moment = moment().add(1, 'day');
 
 export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 
 export class Task {
+  private carriedOver: boolean = false;
   private complete?: boolean;
   private dueDate?: Moment;
   private line: string;
@@ -61,7 +62,12 @@ export class Task {
       }
     }
 
-    return !!(this.dueDate && this.dueDate.isBefore(TOMORROW));
+    return !!(this.dueDate && this.dueDate.isBefore(moment().add(1, 'day')));
+  }
+
+  markCarriedOver(): Task {
+    this.carriedOver = true;
+    return this;
   }
 
   private parse() {
@@ -72,15 +78,22 @@ export class Task {
     }
 
     this.complete = !!this.line.match(TASK_COMPLETE);
+
+    const carriedOverPrefix = AutoTasks.getSettings().carryOverPrefix;
+    if (carriedOverPrefix && this.name.startsWith(carriedOverPrefix)) {
+      this.carriedOver = true;
+      this.name = this.name.replace(carriedOverPrefix + ' ', '');
+    }
   }
 
   toString(): string {
+    const carriedOver = this.carriedOver ? AutoTasks.getSettings().carryOverPrefix + ' ' : '';
     const complete = this.complete ? 'x' : ' ';
     let metadata = this.metadata;
     if (this.dueDate) {
       metadata = metadata.replace(TASK_DUE_DATE, ` 📅 ${this.dueDate.format(DUE_DATE_FORMAT)}`);
     }
 
-    return `- [${complete}] ${this.name}${metadata}`;
+    return `- [${complete}] ${carriedOver}${this.name}${metadata}`;
   }
 }

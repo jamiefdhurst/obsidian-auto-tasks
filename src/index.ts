@@ -17,6 +17,8 @@ export default class AutoTasks extends Plugin {
   private kanban: KanbanProvider;
   private tasks: TasksProvider;
 
+  private static instance: AutoTasks;
+
   constructor(app: ObsidianApp, manifest: PluginManifest) {
     super(app, manifest);
 
@@ -28,6 +30,12 @@ export default class AutoTasks extends Plugin {
     
     this.kanban = new KanbanProvider(this, vault, app.metadataCache);
     this.tasks = new TasksProvider(vault, this.kanban);
+
+    AutoTasks.instance = this;
+  }
+
+  static getSettings(): ISettings {
+    return AutoTasks.instance.getSettings();
   }
   
   async onload(): Promise<void> {

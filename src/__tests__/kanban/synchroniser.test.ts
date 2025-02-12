@@ -27,6 +27,7 @@ describe('kanban synchroniser', () => {
     vault.getFiles = jest.fn();
     vault.modify = jest.fn();
     vault.read = jest.fn();
+    jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(settings);
 
     sut = new KanbanSynchroniser(plugin, vault);
   });
