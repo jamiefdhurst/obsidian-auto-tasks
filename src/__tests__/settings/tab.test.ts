@@ -158,6 +158,8 @@ describe('settings tab', () => {
     expect(setNameSpy).not.toHaveBeenCalledWith('Kanban support');
     expect(setNameSpy).toHaveBeenCalledWith('Automatically synchronise tasks to Kanban board');
     expect(setNameSpy).toHaveBeenCalledWith('Primary Kanban board');
+    expect(setNameSpy).toHaveBeenCalledWith('Folder(s) to ignore');
+    expect(setNameSpy).toHaveBeenCalledWith('Task name(s) to ignore');
   });
 
 });

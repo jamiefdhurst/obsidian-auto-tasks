@@ -6,6 +6,7 @@ import { KanbanPluginAdapter } from '../plugins/kanban';
 import { Suggest } from '../ui/suggest';
 import { capitalise } from '../utils';
 import { IgnoreFolders } from './ignore-folders';
+import { IgnoreMatches } from './ignore-matches';
 
 export class AutoTasksSettingsTab extends PluginSettingTab {
   private vault: Vault;
@@ -133,6 +134,7 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
       const syncSetting = new Setting(kanbanEl);
       const fileSetting = new Setting(kanbanEl);
       const ignoreFoldersSetting = new Setting(kanbanEl);
+      const ignoreMatchesSetting = new Setting(kanbanEl);
 
       syncSetting
         .setName('Automatically synchronise tasks to Kanban board')
@@ -176,7 +178,14 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
         .setDesc('Select folders to ignore reading tasks from when syncing to the Kanban board.');
       new IgnoreFolders(this.app, this.plugin, ignoreFoldersSetting.settingEl.createDiv({cls: 'at--setting'}), this.vault.getAllFolders()).display();
       ignoreFoldersSetting.controlEl.remove();
-      ignoreFoldersSetting.settingEl.classList.add('at--setting-item')
+      ignoreFoldersSetting.settingEl.classList.add('at--setting-item');
+
+      ignoreMatchesSetting
+        .setName('Task name(s) to ignore')
+        .setDesc('Enter task names to ignore when syncing to the Kanban board. You can enter regular expression patterns, e.g. "^Meeting:"');
+      new IgnoreMatches(this.app, this.plugin, ignoreMatchesSetting.settingEl.createDiv({cls: 'at--setting'})).display();
+      ignoreMatchesSetting.controlEl.remove();
+      ignoreMatchesSetting.settingEl.classList.add('at--setting-item');
     }
   }
 }

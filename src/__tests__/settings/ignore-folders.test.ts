@@ -40,7 +40,7 @@ describe('Ignore Folders', () => {
   it('displays an empty list when opened', () => {
     sut.display();
 
-    expect(el.innerHTML).toEqual('<div class="at--setting-folders-container"></div><div class="at--setting-button-container"><div class="at--setting-controls-wrapper"><input type="text"><button class="button">Add folder</button></div></div>');
+    expect(el.innerHTML).toEqual('<div class="at--setting-existing-container"></div><div class="at--setting-button-container"><div class="at--setting-controls-wrapper"><input type="text"><button class="button">Add folder</button></div></div>');
   });
 
   it('displays existing settings when provided', () => {
@@ -50,7 +50,7 @@ describe('Ignore Folders', () => {
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');
-    expect(el.innerHTML).toContain('data-folder="folder-1"');
+    expect(el.innerHTML).toContain('data-setting="folder-1"');
   });
 
   it('adds a new folder when the add button is clicked', async () => {
@@ -60,7 +60,7 @@ describe('Ignore Folders', () => {
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');
-    expect(el.innerHTML).toContain('data-folder="folder-1"');
+    expect(el.innerHTML).toContain('data-setting="folder-1"');
 
     const inputEl = el.find('.at--setting-controls-wrapper input') as HTMLInputElement;
     inputEl.value = 'folder-4';
@@ -70,9 +70,9 @@ describe('Ignore Folders', () => {
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');
-    expect(el.innerHTML).toContain('data-folder="folder-1"');
+    expect(el.innerHTML).toContain('data-setting="folder-1"');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-4">');
-    expect(el.innerHTML).toContain('data-folder="folder-4"');
+    expect(el.innerHTML).toContain('data-setting="folder-4"');
   });
 
   it('removes a folder when the delete button is clicked', async () => {
@@ -82,18 +82,18 @@ describe('Ignore Folders', () => {
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');
-    expect(el.innerHTML).toContain('data-folder="folder-1"');
+    expect(el.innerHTML).toContain('data-setting="folder-1"');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-2">');
-    expect(el.innerHTML).toContain('data-folder="folder-2"');
+    expect(el.innerHTML).toContain('data-setting="folder-2"');
 
-    const aEl = el.find('.at--setting-existing-item a[data-folder="folder-2"]') as HTMLButtonElement;
+    const aEl = el.find('.at--setting-existing-item a[data-setting="folder-2"]') as HTMLButtonElement;
     aEl.dispatchEvent(new Event('click'));
     await new Promise(r => setTimeout(r, WAIT_TIME));
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');
-    expect(el.innerHTML).toContain('data-folder="folder-1"');
+    expect(el.innerHTML).toContain('data-setting="folder-1"');
     expect(el.innerHTML).not.toContain('<input type="text" readonly="readonly" value="folder-2">');
-    expect(el.innerHTML).not.toContain('data-folder="folder-2"');
+    expect(el.innerHTML).not.toContain('data-setting="folder-2"');
   });
 });

@@ -41,7 +41,7 @@ export class KanbanBoard {
 
   getTaskCollection(): TaskCollection {
     if (!this.tasks) {
-      this.tasks = new TaskCollection(this.contents);
+      this.tasks = new TaskCollection(this.contents, true);
     }
     return this.tasks;
   }
