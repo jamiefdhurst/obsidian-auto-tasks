@@ -22,10 +22,9 @@ export class KanbanSynchroniser {
     }
 
     // Filter out the ignored files
-    const settings: ISettings = this.plugin.getSettings();
     files = files.filter(file => {
       let valid = true;
-      settings.kanbanIgnoreFolders.forEach(folder => {
+      this.plugin.getSettings().kanbanIgnoreFolders.forEach(folder => {
         if (file.path.startsWith(folder + '/')) {
           valid = false;
         }
@@ -52,6 +51,11 @@ export class KanbanSynchroniser {
     const fileTasks: Task[] = (new TaskCollection(await this.vault.read(file), true)).getAllTasks();
 
     for (const task of fileTasks) {
+
+      // Ignore matched tasks
+      if (this.plugin.getSettings().kanbanIgnoreMatches.filter(ignore => task.getName().match(ignore)).length > 0) {
+        continue;
+      };
 
       const existingTask = kanbanTasks.getTask(task);
       if (!existingTask) {

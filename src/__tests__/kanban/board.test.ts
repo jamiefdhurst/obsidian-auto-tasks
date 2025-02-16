@@ -21,11 +21,11 @@ describe('kanban board', () => {
     expect(markdown).toContain('## Done');
   });
 
-  it('initialises with contents', () => {
+  it('initialises with contents, adds in default headers', () => {
     sut = new KanbanBoard('example.md', '## Example Header\n\n- [ ] Example task');
 
     const markdown = sut.toString();
-    expect(markdown).not.toContain('## Upcoming');
+    expect(markdown).toContain('## Upcoming');
     expect(markdown).toContain('## Example Header');
     expect(markdown).toContain('- [ ] Example task');
   });

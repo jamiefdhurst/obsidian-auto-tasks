@@ -95,6 +95,22 @@ describe('kanban synchroniser', () => {
     expect(board.toString()).not.toContain('- [');
   });
 
+  it('ignores tasks that match ignore settings', async () => {
+    settings.kanbanIgnoreMatches = ['^Meeting:'];
+
+    const file1 = new TFile();
+    file1.name = 'file1.md';
+    board = new KanbanBoard(BOARD_FILENAME);
+    jest.spyOn(vault, 'read').mockResolvedValue('## TODOs\n\n- [ ] A new task\n- [ ] Meeting: Something or other\n- [ ] Meeting: Jamie 1-2-1\n- [ ] Another new task\n');
+
+    await sut.process(board, [file1]);
+
+    expect(board.getTaskCollection().getAllTasks().length).toEqual(2);
+    expect(board.toString()).toContain('- [ ] A new task');
+    expect(board.toString()).toContain('- [ ] Another new task');
+    expect(board.toString()).not.toContain('- [ ] Meeting:');
+  });
+
   it('adds new tasks', async () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
