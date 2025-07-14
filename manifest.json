@@ -1,7 +1,7 @@
 {
   "id": "auto-tasks",
   "name": "Auto Tasks",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "minAppVersion": "1.6.6",
   "description": "Combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists. Requires the Periodic Notes and Tasks plugins.",
   "author": "Jamie Hurst",
