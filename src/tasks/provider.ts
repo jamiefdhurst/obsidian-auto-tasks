@@ -1,9 +1,7 @@
 import { moment, TAbstractFile } from 'obsidian';
 import { DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { KanbanProvider } from '../kanban/provider';
-import Note from '../notes';
-import DailyNote from '../notes/daily-note';
-import WeeklyNote from '../notes/weekly-note';
+import { DailyNote, Note, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import { IPeriodicitySettings, ISettings } from '../settings';
 import { ObsidianVault } from '../types';
 import { TaskCollection } from './collection';

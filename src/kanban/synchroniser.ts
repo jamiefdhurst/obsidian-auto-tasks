@@ -1,10 +1,9 @@
 import { TFile } from 'obsidian';
+import AutoTasks from '..';
 import { TaskCollection } from '../tasks/collection';
 import { Task } from '../tasks/task';
 import { ObsidianVault } from '../types';
 import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
-import AutoTasks from 'src';
-import { ISettings } from 'src/settings';
 
 export class KanbanSynchroniser {
   private plugin: AutoTasks;
