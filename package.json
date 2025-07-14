@@ -15,7 +15,7 @@
   "author": "Jamie Hurst <jamie@jamiehurst.co.uk>",
   "license": "MIT",
   "dependencies": {
-    "obsidian-daily-notes-interface": "^0.9.4"
+    "obsidian-periodic-notes-provider": "^0.0.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

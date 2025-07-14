@@ -1,8 +1,8 @@
 import { Notice, Plugin, TFile, type PluginManifest } from 'obsidian';
+import { ObsidianAppWithPlugins, PERIODIC_NOTES_EVENT_SETTING_UPDATED, PeriodicNotesPluginAdapter } from 'obsidian-periodic-notes-provider';
 import { SETTINGS_UPDATED } from './events';
 import { KanbanProvider } from './kanban/provider';
 import { KanbanPluginAdapter } from './plugins/kanban';
-import { PERIODIC_NOTES_EVENT_SETTING_UPDATED, PeriodicNotesPluginAdapter } from './plugins/periodic-notes';
 import { TasksPluginAdapter } from './plugins/tasks';
 import { DEFAULT_SETTINGS, type ISettings } from './settings';
 import { AutoTasksSettingsTab } from './settings/tab';
@@ -24,7 +24,7 @@ export default class AutoTasks extends Plugin {
 
     const vault: ObsidianVault = app.vault;
 
-    this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app);
+    this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app as ObsidianAppWithPlugins);
     this.tasksPlugin = new TasksPluginAdapter(app);
     this.kanbanPlugin = new KanbanPluginAdapter(app);
     
@@ -113,7 +113,10 @@ export default class AutoTasks extends Plugin {
   }
 
   private syncPeriodicNotesSettings(): void {
-    this.updateSettings(this.periodicNotesPlugin.convertSettings(this.settings));
+    const pluginSettings = this.periodicNotesPlugin.convertSettings();
+    this.settings.daily.available = pluginSettings.daily.available;
+    this.settings.weekly.available = pluginSettings.weekly.available;
+    this.updateSettings(this.settings);
   }
 
   private onSettingsUpdate(): void {
