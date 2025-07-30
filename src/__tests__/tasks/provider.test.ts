@@ -1,9 +1,11 @@
 import { moment, TFile } from 'obsidian';
+import { DailyNote, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import AutoTasks from '../..';
 import { DONE, DUE, KanbanBoard, PROGRESS, UPCOMING } from '../../kanban/board';
 import { KanbanProvider } from '../../kanban/provider';
-import { DailyNote, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
+import { EmojiTaskCollection } from '../../tasks/emoji-collection';
+import { TaskFactory } from '../../tasks/factory';
 import { TasksProvider } from '../../tasks/provider';
 import { DUE_DATE_FORMAT } from '../../tasks/task';
 import { ObsidianVault } from '../../types';
@@ -12,6 +14,7 @@ describe('tasks provider', () => {
 
   let vault: ObsidianVault;
   let kanban: KanbanProvider;
+  let taskFactory: TaskFactory;
   let dailyNote: DailyNote;
   let weeklyNote: WeeklyNote;
   let settings: ISettings;
@@ -24,6 +27,8 @@ describe('tasks provider', () => {
     vault.read = jest.fn();
     kanban = jest.fn() as unknown as KanbanProvider;
     kanban.getBoard = jest.fn();
+    taskFactory = jest.fn() as unknown as TaskFactory;
+    taskFactory.newCollection = jest.fn().mockImplementation((a, b) => new EmojiTaskCollection(a, b));
     dailyNote = jest.fn() as unknown as DailyNote;
     dailyNote.getCurrent = jest.fn();
     dailyNote.getNextDate = jest.fn();
@@ -33,11 +38,11 @@ describe('tasks provider', () => {
     settings = Object.assign({}, DEFAULT_SETTINGS);
     jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(settings);
 
-    sut = new TasksProvider(vault, kanban, dailyNote, weeklyNote);
+    sut = new TasksProvider(vault, kanban, taskFactory, dailyNote, weeklyNote);
   });
 
   it('initialises with default constructor', () => {
-    expect(new TasksProvider(vault, kanban)).toBeInstanceOf(TasksProvider);
+    expect(new TasksProvider(vault, kanban, taskFactory)).toBeInstanceOf(TasksProvider);
   })
 
   it('does nothing when daily and weekly notes are unavailable', async () => {
@@ -183,7 +188,7 @@ describe('tasks provider', () => {
     jest.spyOn(dailyNote, 'getNextDate').mockReturnValue(moment().startOf('day').add(1, 'day'));
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
     jest.spyOn(vault, 'read').mockResolvedValueOnce(`## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`);
-    const board: KanbanBoard = new KanbanBoard('board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
+    const board: KanbanBoard = new KanbanBoard(taskFactory, 'board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
     jest.spyOn(kanban, 'getBoard').mockResolvedValueOnce(board);
     const currentFile = new TFile();
     jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
@@ -210,7 +215,7 @@ describe('tasks provider', () => {
     jest.spyOn(dailyNote, 'getNextDate').mockReturnValue(moment().startOf('day').add(1, 'day'));
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
     jest.spyOn(vault, 'read').mockResolvedValueOnce(`## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`);
-    const board: KanbanBoard = new KanbanBoard('board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
+    const board: KanbanBoard = new KanbanBoard(taskFactory, 'board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
     jest.spyOn(kanban, 'getBoard').mockResolvedValueOnce(board);
     const currentFile = new TFile();
     jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);

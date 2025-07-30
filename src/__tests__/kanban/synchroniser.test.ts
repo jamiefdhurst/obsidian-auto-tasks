@@ -3,6 +3,8 @@ import AutoTasks from '../..';
 import { DONE, DUE, KanbanBoard, PROGRESS, UPCOMING } from '../../kanban/board';
 import { KanbanSynchroniser } from '../../kanban/synchroniser';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
+import { EmojiTaskCollection } from '../../tasks/emoji-collection';
+import { TaskFactory } from '../../tasks/factory';
 import { DUE_DATE_FORMAT } from '../../tasks/task';
 import { ObsidianVault } from '../../types';
 
@@ -15,6 +17,7 @@ describe('kanban synchroniser', () => {
   let plugin: AutoTasks;
   let settings: ISettings;
   let vault: ObsidianVault;
+  let taskFactory: TaskFactory;
   let board: KanbanBoard;
 
   beforeEach(() => {
@@ -27,15 +30,21 @@ describe('kanban synchroniser', () => {
     vault.getFiles = jest.fn();
     vault.modify = jest.fn();
     vault.read = jest.fn();
+    taskFactory = jest.fn() as unknown as TaskFactory;
+    taskFactory.newCollection = jest.fn().mockImplementation((a, b) => new EmojiTaskCollection(a, b));
     jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(settings);
 
-    sut = new KanbanSynchroniser(plugin, vault);
+    sut = new KanbanSynchroniser(plugin, vault, taskFactory);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it('retrieves files with empty list and performs with empty list', async () => {
     jest.spyOn(vault, 'getFiles').mockReturnValue([]);
     const vaultModify = jest.spyOn(vault, 'modify');
-    board = new KanbanBoard(BOARD_FILENAME);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
     const boardGetTaskCollection = jest.spyOn(board, 'getTaskCollection');
 
     await sut.process(board);
@@ -54,7 +63,7 @@ describe('kanban synchroniser', () => {
     const file3 = new TFile();
     file3.path = 'elsewhere/file3.md';
     const vaultModify = jest.spyOn(vault, 'modify');
-    board = new KanbanBoard(BOARD_FILENAME);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
     const boardGetTaskCollection = jest.spyOn(board, 'getTaskCollection');
     const vaultRead = jest.spyOn(vault, 'read').mockResolvedValue('');
 
@@ -69,7 +78,7 @@ describe('kanban synchroniser', () => {
     const file = new TFile();
     file.name = BOARD_FILENAME;
     const vaultModify = jest.spyOn(vault, 'modify');
-    board = new KanbanBoard(BOARD_FILENAME);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
     const boardGetTaskCollection = jest.spyOn(board, 'getTaskCollection');
 
     await sut.process(board, [file]);
@@ -84,7 +93,7 @@ describe('kanban synchroniser', () => {
     const file2 = new TFile();
     file2.name = 'file2.md';
     jest.spyOn(vault, 'getFiles').mockImplementation(() => [file1, file2]);
-    board = new KanbanBoard(BOARD_FILENAME);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
     const boardGetTaskCollection = jest.spyOn(board, 'getTaskCollection');
     const vaultRead = jest.spyOn(vault, 'read').mockResolvedValue('');
 
@@ -100,7 +109,7 @@ describe('kanban synchroniser', () => {
 
     const file1 = new TFile();
     file1.name = 'file1.md';
-    board = new KanbanBoard(BOARD_FILENAME);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
     jest.spyOn(vault, 'read').mockResolvedValue('## TODOs\n\n- [ ] A new task\n- [ ] Meeting: Something or other\n- [ ] Meeting: Jamie 1-2-1\n- [ ] Another new task\n');
 
     await sut.process(board, [file1]);
@@ -114,7 +123,7 @@ describe('kanban synchroniser', () => {
   it('adds new tasks', async () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
-    board = new KanbanBoard(BOARD_FILENAME);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
     jest.spyOn(vault, 'read').mockResolvedValue('## TODOs\n\n- [ ] A new task\n- [ ] Another new task\n');
 
     await sut.process(board, [file1]);
@@ -127,7 +136,7 @@ describe('kanban synchroniser', () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
     const dueDate = moment().format(DUE_DATE_FORMAT);
-    board = new KanbanBoard(BOARD_FILENAME, `${UPCOMING}\n\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${dueDate}\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${dueDate}\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
     jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Due task 📅 ${dueDate}\n`);
 
     await sut.process(board, [file1]);
@@ -139,7 +148,7 @@ describe('kanban synchroniser', () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
     const dueDate = moment().format(DUE_DATE_FORMAT);
-    board = new KanbanBoard(BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Due task 📅 ${dueDate}\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Due task 📅 ${dueDate}\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
     jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Due task 📅 ${dueDate}\n`);
 
     await sut.process(board, [file1]);
@@ -150,7 +159,7 @@ describe('kanban synchroniser', () => {
   it('moves incomplete tasks back to UPCOMING', async () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
-    board = new KanbanBoard(BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n- [x] Incomplete task\n\n\n\n\n`);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n- [x] Incomplete task\n\n\n\n\n`);
     jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Existing task\n- [ ] Incomplete task\n`);
 
     await sut.process(board, [file1]);
@@ -162,7 +171,7 @@ describe('kanban synchroniser', () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
     const dueDate = moment().format(DUE_DATE_FORMAT);
-    board = new KanbanBoard(BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n- [x] Incomplete task\n\n\n\n\n`);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n- [x] Incomplete task\n\n\n\n\n`);
     jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Existing task\n- [ ] Incomplete task 📅 ${dueDate}\n`);
 
     await sut.process(board, [file1]);
@@ -173,7 +182,7 @@ describe('kanban synchroniser', () => {
   it('moves complete tasks to DONE', async () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
-    board = new KanbanBoard(BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Complete task\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Complete task\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
     jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Existing task\n- [x] Complete task\n`);
 
     await sut.process(board, [file1]);
@@ -185,7 +194,7 @@ describe('kanban synchroniser', () => {
     const file1 = new TFile();
     file1.name = 'file1.md';
     const dueDate = moment().add(5, 'days').format(DUE_DATE_FORMAT);
-    board = new KanbanBoard(BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
     jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Existing task 📅 ${dueDate} ⏫ 🆔 random-id\n`);
 
     await sut.process(board, [file1]);

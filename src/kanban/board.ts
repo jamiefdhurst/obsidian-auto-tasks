@@ -1,4 +1,5 @@
 import { TaskCollection } from '../tasks/collection';
+import { TaskFactory } from '../tasks/factory';
 
 export const UPCOMING = '## Upcoming';
 export const DUE = '## Due';
@@ -23,11 +24,13 @@ const FOOTER: string = `
 `.trim();
 
 export class KanbanBoard {
+  private taskFactory: TaskFactory;
   private fileName: string;
   private contents: string;
   private tasks: TaskCollection;
 
-  constructor(fileName: string, contents?: string) {
+  constructor(taskFactory: TaskFactory, fileName: string, contents?: string) {
+    this.taskFactory = taskFactory;
     this.fileName = fileName;
     if (!contents) {
       contents = `${UPCOMING}\n\n\n\n${DUE}\n\n\n\n${PROGRESS}\n\n\n\n${DONE}\n\n\n\n`;
@@ -41,7 +44,7 @@ export class KanbanBoard {
 
   getTaskCollection(): TaskCollection {
     if (!this.tasks) {
-      this.tasks = new TaskCollection(this.contents, true);
+      this.tasks = this.taskFactory.newCollection(this.contents, true);
     }
     return this.tasks;
   }

@@ -1,6 +1,7 @@
 import { FrontMatterCache, MetadataCache, TFile } from 'obsidian';
 import { KANBAN_PROPERTY_NAME, KANBAN_PROPERTY_VALUE } from '../../kanban/board';
 import { KanbanBoardManager, KanbanBoardOpenError } from '../../kanban/board-manager';
+import { TaskFactory } from '../../tasks/factory';
 import { ObsidianVault } from '../../types';
 
 describe('kanban board-manager', () => {
@@ -13,6 +14,8 @@ describe('kanban board-manager', () => {
   let sut: KanbanBoardManager;
 
   beforeEach(() => {
+    const taskFactory = jest.fn as unknown as TaskFactory;
+
     vault = jest.fn() as unknown as ObsidianVault;
     metadataCache = jest.fn() as unknown as MetadataCache;
 
@@ -20,7 +23,7 @@ describe('kanban board-manager', () => {
     dummyFile.basename = 'example';
     dummyFile.name = 'example.md';
 
-    sut = new KanbanBoardManager(vault, metadataCache);
+    sut = new KanbanBoardManager(vault, metadataCache, taskFactory);
   });
 
   it('returns nothing when it can\'t find any boards', () => {

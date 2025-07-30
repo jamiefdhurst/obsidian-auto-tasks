@@ -6,12 +6,14 @@ import { KanbanProvider } from '../../kanban/provider';
 import { KanbanSynchroniser } from '../../kanban/synchroniser';
 import { Watcher } from '../../kanban/watcher';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
+import { TaskFactory } from '../../tasks/factory';
 import { ObsidianVault } from '../../types';
 
 describe('kanban provider', () => {
 
   let plugin: AutoTasks;
 
+  let taskFactory: TaskFactory;
   let boardManager: KanbanBoardManager;
   let synchroniser: KanbanSynchroniser;
   let watcher: Watcher;
@@ -24,6 +26,7 @@ describe('kanban provider', () => {
     const vault = jest.fn() as unknown as ObsidianVault;
     const metadataCache = jest.fn() as unknown as MetadataCache;
     plugin = jest.fn() as unknown as AutoTasks;
+    taskFactory = jest.fn() as unknown as TaskFactory;
     boardManager = jest.fn() as unknown as KanbanBoardManager;
     synchroniser = jest.fn() as unknown as KanbanSynchroniser;
     watcher = jest.fn() as unknown as Watcher;
@@ -34,13 +37,13 @@ describe('kanban provider', () => {
       kanbanFile: 'example.md',
     });
 
-    sut = new KanbanProvider(plugin, vault, metadataCache, boardManager, synchroniser, watcher);
+    sut = new KanbanProvider(plugin, vault, metadataCache, taskFactory, boardManager, synchroniser, watcher);
   });
 
   it('loads with default dependencies', () => {
     const vault = jest.fn() as unknown as ObsidianVault;
     const metadataCache = jest.fn() as unknown as MetadataCache;
-    sut = new KanbanProvider(plugin, vault, metadataCache);
+    sut = new KanbanProvider(plugin, vault, metadataCache, taskFactory);
 
     expect(sut).toBeInstanceOf(KanbanProvider);
   });
@@ -72,7 +75,7 @@ describe('kanban provider', () => {
     settings.kanbanSync = true;
     settings.kanbanFile = 'example.md';
     boardManager.get = jest.fn();
-    jest.spyOn(boardManager, 'get').mockImplementationOnce(async () => new KanbanBoard('example.md'));
+    jest.spyOn(boardManager, 'get').mockImplementationOnce(async () => new KanbanBoard(taskFactory, 'example.md'));
     synchroniser.process = jest.fn();
     const synchroniserProcess = jest.spyOn(synchroniser, 'process');
 
@@ -107,7 +110,7 @@ describe('kanban provider', () => {
     settings.kanbanSync = true;
     settings.kanbanFile = 'example.md';
     boardManager.get = jest.fn();
-    const board = new KanbanBoard('example.md');
+    const board = new KanbanBoard(taskFactory, 'example.md');
     jest.spyOn(boardManager, 'get').mockImplementation(async () => board);
 
     const result = await sut.getBoard();
