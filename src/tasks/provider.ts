@@ -1,10 +1,10 @@
 import { moment, TAbstractFile } from 'obsidian';
+import { DailyNote, Note, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import { DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { KanbanProvider } from '../kanban/provider';
-import { DailyNote, Note, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import { IPeriodicitySettings, ISettings } from '../settings';
 import { ObsidianVault } from '../types';
-import { TaskCollection } from './collection';
+import { TaskFactory } from './factory';
 import { Task } from './task';
 
 export class TasksProvider {
@@ -12,10 +12,12 @@ export class TasksProvider {
   private kanban: KanbanProvider;
   private dailyNote: DailyNote;
   private weeklyNote: WeeklyNote;
+  private factory: TaskFactory;
 
-  constructor(vault: ObsidianVault, kanban: KanbanProvider, dailyNote?: DailyNote, weeklyNote?: WeeklyNote) {
+  constructor(vault: ObsidianVault, kanban: KanbanProvider, taskFactory: TaskFactory, dailyNote?: DailyNote, weeklyNote?: WeeklyNote) {
     this.vault = vault;
     this.kanban = kanban;
+    this.factory = taskFactory;
     this.dailyNote = dailyNote || new DailyNote();
     this.weeklyNote = weeklyNote || new WeeklyNote();
   }
@@ -30,7 +32,7 @@ export class TasksProvider {
       
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
-      const tasks: Task[] = (new TaskCollection(previousEntryContents)).getTasksFromLists(periodicitySetting.searchHeaders);
+      const tasks: Task[] = (this.factory.newCollection(previousEntryContents)).getTasksFromLists(periodicitySetting.searchHeaders);
       let tasksToAdd: Task[] = tasks.filter(task => !task.isComplete());
 
       // Find any tasks that are due elsewhere in other files, pull these from the central board

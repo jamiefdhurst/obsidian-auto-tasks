@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 import AutoTasks from '..';
 import { TaskCollection } from '../tasks/collection';
+import { TaskFactory } from '../tasks/factory';
 import { Task } from '../tasks/task';
 import { ObsidianVault } from '../types';
 import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
@@ -8,10 +9,12 @@ import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
 export class KanbanSynchroniser {
   private plugin: AutoTasks;
   private vault: ObsidianVault;
+  private taskFactory: TaskFactory;
 
-  constructor(plugin: AutoTasks, vault: ObsidianVault) {
+  constructor(plugin: AutoTasks, vault: ObsidianVault, taskFactory: TaskFactory) {
     this.plugin = plugin;
     this.vault = vault;
+    this.taskFactory = taskFactory;
   }
 
   async process(board: KanbanBoard, files?: TFile[]): Promise<void> {
@@ -47,7 +50,7 @@ export class KanbanSynchroniser {
     const kanbanTasks: TaskCollection = board.getTaskCollection();
 
     // Discover any tasks within the current file
-    const fileTasks: Task[] = (new TaskCollection(await this.vault.read(file), true)).getAllTasks();
+    const fileTasks: Task[] = this.taskFactory.newCollection(await this.vault.read(file), true).getAllTasks();
 
     for (const task of fileTasks) {
 

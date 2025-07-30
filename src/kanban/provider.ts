@@ -6,6 +6,7 @@ import { KanbanBoard } from './board';
 import { KanbanBoardManager } from './board-manager';
 import { KanbanSynchroniser } from './synchroniser';
 import { Watcher } from './watcher';
+import { TaskFactory } from 'src/tasks/factory';
 
 export class KanbanProvider {
   private plugin: AutoTasks;
@@ -17,13 +18,14 @@ export class KanbanProvider {
     plugin: AutoTasks,
     vault: ObsidianVault,
     metadataCache: MetadataCache,
+    taskFactory: TaskFactory,
     boardManager?: KanbanBoardManager,
     synchroniser?: KanbanSynchroniser,
     watcher?: Watcher
   ) {
     this.plugin = plugin;
-    this.boardManager = boardManager || new KanbanBoardManager(vault, metadataCache);
-    this.synchroniser = synchroniser || new KanbanSynchroniser(plugin, vault);
+    this.boardManager = boardManager || new KanbanBoardManager(vault, metadataCache, taskFactory);
+    this.synchroniser = synchroniser || new KanbanSynchroniser(plugin, vault, taskFactory);
     this.watcher = watcher || new Watcher(this);
   }
 

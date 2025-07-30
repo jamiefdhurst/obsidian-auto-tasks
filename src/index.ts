@@ -8,11 +8,13 @@ import { DEFAULT_SETTINGS, type ISettings } from './settings';
 import { AutoTasksSettingsTab } from './settings/tab';
 import { TasksProvider } from './tasks/provider';
 import type { ObsidianApp, ObsidianVault, ObsidianWorkspace } from './types';
+import { TaskFactory } from './tasks/factory';
 
 export default class AutoTasks extends Plugin {
   private settings: ISettings = DEFAULT_SETTINGS;
   private periodicNotesPlugin: PeriodicNotesPluginAdapter;
   private tasksPlugin: TasksPluginAdapter;
+  private taskFactory: TaskFactory;
   private kanbanPlugin: KanbanPluginAdapter;
   private kanban: KanbanProvider;
   private tasks: TasksProvider;
@@ -27,9 +29,10 @@ export default class AutoTasks extends Plugin {
     this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app as ObsidianAppWithPlugins);
     this.tasksPlugin = new TasksPluginAdapter(app);
     this.kanbanPlugin = new KanbanPluginAdapter(app);
-    
-    this.kanban = new KanbanProvider(this, vault, app.metadataCache);
-    this.tasks = new TasksProvider(vault, this.kanban);
+
+    this.taskFactory = new TaskFactory(this.tasksPlugin);
+    this.kanban = new KanbanProvider(this, vault, app.metadataCache, this.taskFactory);
+    this.tasks = new TasksProvider(vault, this.kanban, this.taskFactory);
 
     AutoTasks.instance = this;
   }

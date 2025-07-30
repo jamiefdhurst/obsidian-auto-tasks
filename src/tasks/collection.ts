@@ -4,7 +4,7 @@ import { Task } from './task';
 const HEADER_LINE: RegExp = /^#{1,6}/;
 const TASK_LINE: RegExp = /^-\s\[[x\s]\]/;
 
-export class TaskCollection {
+export abstract class TaskCollection {
   private tasks: Map<string, Task[]>;
 
   constructor(contents: string, addBoardHeaders?: boolean) {
@@ -19,7 +19,7 @@ export class TaskCollection {
       }
       if (line.match(TASK_LINE)) {
         const existingTasks = this.tasks.get(currentHeader) || [];
-        existingTasks.push(new Task(line));
+        existingTasks.push(this.parseTask(line));
         this.tasks.set(currentHeader, existingTasks);
       }
     }
@@ -97,6 +97,8 @@ export class TaskCollection {
     
     this.tasks.get(newList)?.push(task);
   }
+
+  protected abstract parseTask(line: string): Task;
 
   replace(task: Task) {
     const list = this.getList(task);
