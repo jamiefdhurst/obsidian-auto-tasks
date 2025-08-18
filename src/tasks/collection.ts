@@ -100,6 +100,16 @@ export abstract class TaskCollection {
 
   protected abstract parseTask(line: string): Task;
 
+  remove(task: Task) {
+    for (const tasksList of this.tasks.values()) {
+      for (const existingTask of tasksList.values()) {
+        if (task.equals(existingTask)) {
+          tasksList.remove(existingTask);
+        }
+      }
+    }
+  }
+
   replace(task: Task) {
     const list = this.getList(task);
     const existingTask = this.tasks.get(list)?.find(t => t.equals(task));

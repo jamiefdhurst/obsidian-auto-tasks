@@ -1,6 +1,6 @@
 import { moment, TFile } from 'obsidian';
 import AutoTasks from '../..';
-import { DONE, DUE, KanbanBoard, PROGRESS, UPCOMING } from '../../kanban/board';
+import { ARCHIVE, ARCHIVE_DIVIDER, COMPLETE, DONE, DUE, KanbanBoard, PROGRESS, UPCOMING } from '../../kanban/board';
 import { KanbanSynchroniser } from '../../kanban/synchroniser';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { EmojiTaskCollection } from '../../tasks/emoji-collection';
@@ -51,7 +51,7 @@ describe('kanban synchroniser', () => {
     await sut.process(board, []);
 
     expect(vaultModify).toHaveBeenCalledTimes(2);
-    expect(boardGetTaskCollection).toHaveBeenCalledTimes(2);
+    expect(boardGetTaskCollection).toHaveBeenCalledTimes(4);
   });
 
   it('excludes ignored folders', async () => {
@@ -69,7 +69,7 @@ describe('kanban synchroniser', () => {
 
     await sut.process(board, [file1, file2, file3]);
 
-    expect(boardGetTaskCollection).toHaveBeenCalledTimes(2);
+    expect(boardGetTaskCollection).toHaveBeenCalledTimes(3);
     expect(vaultRead).toHaveBeenCalledTimes(1);
     expect(vaultModify).toHaveBeenCalled();
   });
@@ -84,7 +84,7 @@ describe('kanban synchroniser', () => {
     await sut.process(board, [file]);
 
     expect(vaultModify).toHaveBeenCalled();
-    expect(boardGetTaskCollection).toHaveBeenCalledTimes(1);
+    expect(boardGetTaskCollection).toHaveBeenCalledTimes(2);
   });
 
   it('retrieves files with empty list and performs with multiple files, working with empty collections', async () => {
@@ -99,7 +99,7 @@ describe('kanban synchroniser', () => {
 
     await sut.process(board, []);
 
-    expect(boardGetTaskCollection).toHaveBeenCalledTimes(3);
+    expect(boardGetTaskCollection).toHaveBeenCalledTimes(4);
     expect(vaultRead).toHaveBeenCalledTimes(2);
     expect(board.toString()).not.toContain('- [');
   });
@@ -164,7 +164,7 @@ describe('kanban synchroniser', () => {
 
     await sut.process(board, [file1]);
 
-    expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task\n- [ ] Incomplete task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task\n- [ ] Incomplete task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n${COMPLETE}\n\n\n\n`);
   });
 
   it('moves incomplete tasks back to DUE', async () => {
@@ -176,7 +176,7 @@ describe('kanban synchroniser', () => {
 
     await sut.process(board, [file1]);
 
-    expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n- [ ] Incomplete task 📅 ${dueDate}\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n- [ ] Incomplete task 📅 ${dueDate}\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n${COMPLETE}\n\n\n\n`);
   });
 
   it('moves complete tasks to DONE', async () => {
@@ -187,7 +187,7 @@ describe('kanban synchroniser', () => {
 
     await sut.process(board, [file1]);
 
-    expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`);
+    expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n${COMPLETE}\n- [x] Complete task\n\n\n`);
   });
 
   it('replaces any other tasks to ensure new metadata is persisted', async () => {
@@ -199,6 +199,18 @@ describe('kanban synchroniser', () => {
 
     await sut.process(board, [file1]);
     expect(board.toString()).toContain(`${UPCOMING}\n\n- [ ] Existing task 📅 ${dueDate} ⏫ 🆔 random-id\n\n\n\n\n${DUE}`);
+  });
+
+  it('moves completed tasks that are old to archive', async () => {
+    const file1 = new TFile();
+    file1.name = 'file1.md';
+    const dueDate = moment().subtract(3, 'weeks').format(DUE_DATE_FORMAT);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME, `${UPCOMING}\n\n- [ ] Existing task\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`);
+    jest.spyOn(vault, 'read').mockResolvedValue(`## TODOs\n\n- [ ] Existing task\n- [x] Complete task ✅ ${dueDate}\n`);
+
+    await sut.process(board, [file1]);
+    expect(board.toString()).toContain(`${DONE}\n\n${COMPLETE}\n\n\n\n\n\n${ARCHIVE_DIVIDER}`);
+    expect(board.toString()).toContain(`${ARCHIVE}\n\n- [x] Complete task ✅ ${dueDate}\n`);
   });
 
 });

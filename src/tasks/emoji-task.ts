@@ -11,6 +11,11 @@ export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 
 export class EmojiTask extends Task {
 
+  getCompletedDate(): string | undefined {
+    const meta = this.getMetadata();
+    return meta.get('✅');
+  }
+
   getDueDate(): string | undefined {
     const meta = this.getMetadata();
     return meta.get('📅');
