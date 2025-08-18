@@ -169,12 +169,30 @@ describe('DataView task collection', () => {
     expect(sut.getAllTasks()[0].getDueDate()).toEqual('2024-10-10');
   });
 
+  it('replaces task when it exists with completed dates', () => {
+    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
+
+    sut.replace(new DataViewTask('- [ ] Task 1 [completion:: 2024-10-10]'));
+    
+    expect(sut.getAllTasks().length).toEqual(1);
+    expect(sut.getAllTasks()[0].getCompletedDate()).toEqual('2024-10-10');
+  });
+
+
   it('does not replace task when it is not found', () => {
     sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new DataViewTask('- [ ] Task 2 [due:: 2024-10-10]'));
     
     expect(sut.getAllTasks().length).toEqual(1);
+  });
+
+  it('removes a task', () => {
+    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2');
+
+    sut.remove(new DataViewTask('- [ ] Task 1'));
+
+    expect(sut.getAllTasks()[0].getName()).toEqual('Task 2');
   });
 
   it('converts collection to string format', () => {

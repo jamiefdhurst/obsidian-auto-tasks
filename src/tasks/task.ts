@@ -1,4 +1,5 @@
 import { Moment } from 'moment';
+import { moment } from 'obsidian';
 
 export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 
@@ -20,10 +21,19 @@ export abstract class Task {
     return this.name === task.getName();
   }
 
+  abstract getCompletedDate(): string | undefined;
+
   abstract getDueDate(): string | undefined;
 
   getName(): string {
     return this.name;
+  }
+
+  isArchivable(): boolean {
+    if (this.isComplete() && this.getCompletedDate()) {
+      return moment(this.getCompletedDate()).isBefore(moment().subtract(2, 'weeks'));
+    }
+    return false;
   }
 
   isComplete(): boolean {

@@ -34,6 +34,18 @@ describe('kanban board', () => {
     expect(markdown).toContain('## Upcoming');
     expect(markdown).toContain('## Example Header');
     expect(markdown).toContain('- [ ] Example task');
+    expect(markdown).not.toContain('## Archive');
+  });
+
+  it('initialises with contents and archive', () => {
+    sut = new KanbanBoard(taskFactory, 'example.md', '## Example Header\n\n- [ ] Example task', '## Archive\n\n- [x] Archived task');
+
+    const markdown = sut.toString();
+    expect(markdown).toContain('## Upcoming');
+    expect(markdown).toContain('## Example Header');
+    expect(markdown).toContain('- [ ] Example task');
+    expect(markdown).toContain('## Archive');
+    expect(markdown).toContain('- [x] Archived task');
   });
 
   it('gets filename correctly', () => {
@@ -49,6 +61,19 @@ describe('kanban board', () => {
 
     const tasks1 = sut.getTaskCollection();
     const tasks2 = sut.getTaskCollection();
+
+    expect(newCollection).toHaveBeenCalledTimes(1);
+    expect(tasks1).toEqual(tasks2);
+    expect(tasks1.getAllTasks().length).toEqual(1);
+  });
+
+    it('gets an archived task collection and uses the cached object', () => {
+    const newCollection = jest.spyOn(taskFactory, 'newCollection');
+
+    sut = new KanbanBoard(taskFactory, 'example.md', '## Example Header\n\n- [ ] Example task\n- [ ] Another example task', '## Archive\n\n- [x] Archived task');
+
+    const tasks1 = sut.getArchive();
+    const tasks2 = sut.getArchive();
 
     expect(newCollection).toHaveBeenCalledTimes(1);
     expect(tasks1).toEqual(tasks2);

@@ -1,6 +1,9 @@
 import { FrontMatterCache, MetadataCache, TFile } from 'obsidian';
+import AutoTasks from '../..';
 import { KANBAN_PROPERTY_NAME, KANBAN_PROPERTY_VALUE } from '../../kanban/board';
 import { KanbanBoardManager, KanbanBoardOpenError } from '../../kanban/board-manager';
+import { DEFAULT_SETTINGS } from '../../settings';
+import { EmojiTaskCollection } from '../../tasks/emoji-collection';
 import { TaskFactory } from '../../tasks/factory';
 import { ObsidianVault } from '../../types';
 
@@ -15,6 +18,9 @@ describe('kanban board-manager', () => {
 
   beforeEach(() => {
     const taskFactory = jest.fn as unknown as TaskFactory;
+    taskFactory.newCollection = jest.fn().mockImplementation((a, b) => new EmojiTaskCollection(a, b));
+
+    jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
 
     vault = jest.fn() as unknown as ObsidianVault;
     metadataCache = jest.fn() as unknown as MetadataCache;
@@ -76,6 +82,19 @@ describe('kanban board-manager', () => {
     const board = await sut.get('example.md');
 
     expect(board.getFileName()).toBe('example.md');
+    expect(board.getArchive().getAllTasks().length).toEqual(0);
+  });
+
+  it('returns a valid board with an archive', async () => {
+    vault.getFileByPath = jest.fn();
+    jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
+    vault.read = jest.fn();
+    jest.spyOn(vault, 'read').mockImplementation(async (_) => '## Default List\n- [ ] Some task or another\n\n\n***\n## Archive\n\n- [x] Archived task');
+
+    const board = await sut.get('example.md');
+
+    expect(board.getFileName()).toBe('example.md');
+    expect(board.getArchive().getAllTasks().length).toEqual(1);
   });
 
 });

@@ -1,7 +1,7 @@
 import { MetadataCache, TFile } from 'obsidian';
 import { TaskFactory } from '../tasks/factory';
 import { ObsidianVault } from '../types';
-import { KANBAN_PROPERTY_NAME, KANBAN_PROPERTY_VALUE, KanbanBoard } from './board';
+import { ARCHIVE_DIVIDER, KANBAN_PROPERTY_NAME, KANBAN_PROPERTY_VALUE, KanbanBoard } from './board';
 
 export class KanbanBoardManager {
   private vault: ObsidianVault;
@@ -47,7 +47,8 @@ export class KanbanBoardManager {
       throw new KanbanBoardOpenError();
     }
 
-    return new KanbanBoard(this.taskFactory, fileName, await this.vault.read(file));
+    const boardContents = (await this.vault.read(file)).split(ARCHIVE_DIVIDER);
+    return new KanbanBoard(this.taskFactory, fileName, boardContents[0], boardContents.length > 1 ? boardContents[1] : '');
   }
 }
 

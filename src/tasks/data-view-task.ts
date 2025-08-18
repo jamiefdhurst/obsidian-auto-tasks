@@ -14,6 +14,11 @@ export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 
 export class DataViewTask extends Task {
 
+  getCompletedDate(): string | undefined {
+    const meta = this.getMetadata();
+    return meta.get('completion');
+  }
+
   getDueDate(): string | undefined {
     const meta = this.getMetadata();
     return meta.get('due');

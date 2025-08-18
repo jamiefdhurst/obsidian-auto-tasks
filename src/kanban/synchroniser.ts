@@ -4,7 +4,7 @@ import { TaskCollection } from '../tasks/collection';
 import { TaskFactory } from '../tasks/factory';
 import { Task } from '../tasks/task';
 import { ObsidianVault } from '../types';
-import { DONE, DUE, KanbanBoard, UPCOMING } from './board';
+import { ARCHIVE, DONE, DUE, KanbanBoard, UPCOMING } from './board';
 
 export class KanbanSynchroniser {
   private plugin: AutoTasks;
@@ -40,6 +40,9 @@ export class KanbanSynchroniser {
       }
     }
 
+    // Archive any tasks that are older than 2 weeks
+    await this.archiveOldTasks(board);
+
     const boardFile = this.vault.getFileByPath(board.getFileName());
     if (boardFile instanceof TFile) {
       await this.vault.modify(boardFile, board.toString());
@@ -74,6 +77,17 @@ export class KanbanSynchroniser {
         } else {
           kanbanTasks.replace(task);
         }
+      }
+    }
+  }
+
+  private async archiveOldTasks(board: KanbanBoard) {
+    const currentTasks: TaskCollection = board.getTaskCollection();
+    const archivedTasks: TaskCollection = board.getArchive();
+    for (const doneTask of currentTasks.getTasksFromLists([DONE])) {
+      if (doneTask.isArchivable()) {
+        archivedTasks.add(doneTask, ARCHIVE);
+        currentTasks.remove(doneTask);
       }
     }
   }
