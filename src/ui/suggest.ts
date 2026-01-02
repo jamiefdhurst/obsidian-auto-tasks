@@ -7,7 +7,7 @@ export class Suggest extends AbstractInputSuggest<string> {
   constructor(app: App, options: TAbstractFile[], el: HTMLInputElement) {
     super(app, el);
     this.el = el;
-    options.forEach(option => {
+    options.forEach((option) => {
       this.options.add(option.path);
     });
   }
@@ -15,7 +15,7 @@ export class Suggest extends AbstractInputSuggest<string> {
   protected getSuggestions(query: string): string[] {
     query = query.toLocaleLowerCase();
 
-    return [...this.options].filter(path => path.toLocaleLowerCase().contains(query));
+    return [...this.options].filter((path) => path.toLocaleLowerCase().contains(query));
   }
 
   renderSuggestion(value: string, el: HTMLElement): void {

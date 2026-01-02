@@ -22,9 +22,8 @@ export type ObsidianVault = {
   on(name: 'modify', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
   on(name: 'delete', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
   on(name: 'rename', callback: (file: TAbstractFile, oldPath: string) => any, ctx?: any): EventRef;
-}
+};
 export type ObsidianWorkspaceWithOn = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on(name: string, callback: () => void, ctx?: any): EventRef;
 };
 export type ObsidianWorkspace = Workspace & ObsidianWorkspaceWithOn;

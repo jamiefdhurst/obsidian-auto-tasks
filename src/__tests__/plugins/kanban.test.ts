@@ -3,7 +3,6 @@ import { KanbanPluginAdapter } from '../../plugins/kanban';
 import { ObsidianAppWithPlugins } from '../../types';
 
 describe('kanban plugin adapter', () => {
-
   let app: ObsidianAppWithPlugins;
 
   let sut: KanbanPluginAdapter;
@@ -27,4 +26,4 @@ describe('kanban plugin adapter', () => {
   it('returns false when plugin is unavailable', () => {
     expect(sut.isEnabled()).toEqual(false);
   });
-})
+});

@@ -7,7 +7,6 @@ import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { AutoTasksSettingsTab } from '../../settings/tab';
 
 describe('settings tab', () => {
-
   let app: App;
   let plugin: AutoTasks;
   let kanbanPlugin: KanbanPluginAdapter;
@@ -25,7 +24,7 @@ describe('settings tab', () => {
     kanbanPlugin = jest.fn() as unknown as KanbanPluginAdapter;
     kanbanPlugin.isEnabled = jest.fn();
     kanbanBoardManager = jest.fn() as unknown as KanbanBoardManager;
-    kanbanBoardManager.getAllBoards = jest.fn()
+    kanbanBoardManager.getAllBoards = jest.fn();
     kanban = jest.fn() as unknown as KanbanProvider;
     kanban.getBoardManager = jest.fn().mockReturnValue(kanbanBoardManager);
 
@@ -133,7 +132,9 @@ describe('settings tab', () => {
     sut.display();
 
     expect(setNameSpy).toHaveBeenCalledWith('Carry over daily tasks');
-    expect(setDescSpy).toHaveBeenCalledWith('Whether any tasks from anywhere else in the vault should be added that are marked as due within the daily period.')
+    expect(setDescSpy).toHaveBeenCalledWith(
+      'Whether any tasks from anywhere else in the vault should be added that are marked as due within the daily period.'
+    );
   });
 
   it('displays banner when kanban plugin is unavailable', () => {
@@ -161,5 +162,4 @@ describe('settings tab', () => {
     expect(setNameSpy).toHaveBeenCalledWith('Folder(s) to ignore');
     expect(setNameSpy).toHaveBeenCalledWith('Task name(s) to ignore');
   });
-
 });

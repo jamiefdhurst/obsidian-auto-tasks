@@ -1,0 +1,61 @@
+# Read the commit message
+commit_msg_file=$1
+commit_msg=$(cat "$commit_msg_file")
+
+# Skip validation for merge commits and auto-generated commits
+if echo "$commit_msg" | grep -qE "^Merge (branch|pull request)|^\[skip ci\]"; then
+  exit 0
+fi
+
+# Define valid commit patterns
+# These patterns should match what the version calculation script expects
+valid_patterns=(
+  "^(feat|feature|add|minor)(\(.+\))?:"           # Minor version bumps
+  "^(fix|bug)(\(.+\))?:"                          # Patch version bumps
+  "^(update|refactor|improve|perf|change)(\(.+\))?:" # Patch version bumps
+  "^(breaking|major)(\(.+\))?:"                   # Major version bumps
+  "^.+!:"                                         # Breaking change (conventional commits)
+  "^(docs?|documentation|test|tests?|chore)(\(.+\))?:" # Non-release commits
+  "^(build|ci|style|revert)(\(.+\))?:"           # Non-release commits
+)
+
+# Check if commit message matches any valid pattern
+is_valid=false
+for pattern in "${valid_patterns[@]}"; do
+  if echo "$commit_msg" | grep -qE "$pattern"; then
+    is_valid=true
+    break
+  fi
+done
+
+# If not valid, show helpful error message
+if [ "$is_valid" = false ]; then
+  echo ""
+  echo "❌ Invalid commit message format!"
+  echo ""
+  echo "Your commit message must start with one of the following types:"
+  echo ""
+  echo "  Version Bumps:"
+  echo "    • feat:, feature:, add:     → minor version (new features)"
+  echo "    • fix:, bug:                → patch version (bug fixes)"
+  echo "    • update:, refactor:        → patch version (improvements)"
+  echo "    • improve:, perf:           → patch version (performance)"
+  echo "    • breaking:, major:, !:     → major version (breaking changes)"
+  echo ""
+  echo "  No Version Bump:"
+  echo "    • docs:, doc:               → documentation only"
+  echo "    • test:, tests:             → tests only"
+  echo "    • chore:                    → maintenance tasks"
+  echo "    • build:, ci:, style:       → tooling/formatting"
+  echo ""
+  echo "  You can also use conventional commit format with scope:"
+  echo "    • feat(auth): Add login"
+  echo "    • fix(api): Resolve bug"
+  echo "    • chore(deps): Update packages"
+  echo ""
+  echo "Your message: $commit_msg"
+  echo ""
+  exit 1
+fi
+
+exit 0

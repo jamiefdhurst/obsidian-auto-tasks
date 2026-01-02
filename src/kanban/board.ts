@@ -31,10 +31,15 @@ export class KanbanBoard {
   private fileName: string;
   private contents: string;
   private archiveContents: string;
-  private tasks: TaskCollection;
-  private tasksArchive: TaskCollection;
+  private tasks?: TaskCollection;
+  private tasksArchive?: TaskCollection;
 
-  constructor(taskFactory: TaskFactory, fileName: string, contents?: string, archiveContents?: string) {
+  constructor(
+    taskFactory: TaskFactory,
+    fileName: string,
+    contents?: string,
+    archiveContents?: string
+  ) {
     this.taskFactory = taskFactory;
     this.fileName = fileName;
     if (!contents) {
@@ -66,7 +71,6 @@ export class KanbanBoard {
   }
 
   toString(): string {
-
     // Add complete marker needed in Kanban board for done list
     let tasks: string = this.getTaskCollection().toString('\n\n\n\n');
     tasks = tasks.replace(`${DONE}\n`, `${DONE}\n\n${COMPLETE}`);

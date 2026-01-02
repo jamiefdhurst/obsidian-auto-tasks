@@ -7,24 +7,29 @@ import { EmojiTask } from './emoji-task';
 import { Task } from './task';
 
 export class TaskFactory {
-  private dataView: boolean = false;
+  private dataView: boolean | undefined = undefined;
+  private pluginAdapter: TasksPluginAdapter;
 
   constructor(pluginAdapter: TasksPluginAdapter) {
-    const t = this;
-    pluginAdapter.isDataViewFormat().then((dataView) => {
-      t.dataView = dataView;
-    });
+    this.pluginAdapter = pluginAdapter;
+  }
+
+  private async checkDataViewStatus() {
+    if (this.dataView !== undefined) {
+      return;
+    }
+    this.dataView = await this.pluginAdapter.isDataViewFormat();
   }
 
   newCollection(contents: string, addBoardHeaders?: boolean): TaskCollection {
+    this.checkDataViewStatus();
     return this.dataView
       ? new DataViewTaskCollection(contents, addBoardHeaders)
       : new EmojiTaskCollection(contents, addBoardHeaders);
   }
-  
+
   newTask(line: string): Task {
-    return this.dataView
-      ? new DataViewTask(line)
-      : new EmojiTask(line);
+    this.checkDataViewStatus();
+    return this.dataView ? new DataViewTask(line) : new EmojiTask(line);
   }
 }

@@ -10,7 +10,6 @@ import { TaskFactory } from '../../tasks/factory';
 import { ObsidianVault } from '../../types';
 
 describe('kanban provider', () => {
-
   let plugin: AutoTasks;
 
   let taskFactory: TaskFactory;
@@ -37,7 +36,15 @@ describe('kanban provider', () => {
       kanbanFile: 'example.md',
     });
 
-    sut = new KanbanProvider(plugin, vault, metadataCache, taskFactory, boardManager, synchroniser, watcher);
+    sut = new KanbanProvider(
+      plugin,
+      vault,
+      metadataCache,
+      taskFactory,
+      boardManager,
+      synchroniser,
+      watcher
+    );
   });
 
   it('loads with default dependencies', () => {
@@ -62,7 +69,9 @@ describe('kanban provider', () => {
     settings.kanbanSync = true;
     settings.kanbanFile = 'example.md';
     boardManager.get = jest.fn();
-    jest.spyOn(boardManager, 'get').mockImplementationOnce(async () => { throw new KanbanBoardOpenError(); });
+    jest.spyOn(boardManager, 'get').mockImplementationOnce(async () => {
+      throw new KanbanBoardOpenError();
+    });
     synchroniser.process = jest.fn();
     const synchroniserProcess = jest.spyOn(synchroniser, 'process');
 
@@ -75,7 +84,9 @@ describe('kanban provider', () => {
     settings.kanbanSync = true;
     settings.kanbanFile = 'example.md';
     boardManager.get = jest.fn();
-    jest.spyOn(boardManager, 'get').mockImplementationOnce(async () => new KanbanBoard(taskFactory, 'example.md'));
+    jest
+      .spyOn(boardManager, 'get')
+      .mockImplementationOnce(async () => new KanbanBoard(taskFactory, 'example.md'));
     synchroniser.process = jest.fn();
     const synchroniserProcess = jest.spyOn(synchroniser, 'process');
 
@@ -101,9 +112,7 @@ describe('kanban provider', () => {
     boardManager.get = jest.fn();
     jest.spyOn(boardManager, 'get').mockRejectedValue(new KanbanBoardOpenError());
 
-    expect(sut.getBoard())
-      .rejects
-      .toThrow(KanbanBoardOpenError);
+    expect(sut.getBoard()).rejects.toThrow(KanbanBoardOpenError);
   });
 
   it('gets board successfully', async () => {
@@ -125,5 +134,4 @@ describe('kanban provider', () => {
   it('gets watcher', () => {
     expect(sut.getWatcher()).toEqual(watcher);
   });
-
 });

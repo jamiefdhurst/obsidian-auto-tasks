@@ -5,14 +5,15 @@ import { EmojiTaskCollection } from '../../tasks/emoji-collection';
 import { TaskFactory } from '../../tasks/factory';
 
 describe('kanban board', () => {
-
   let taskFactory: TaskFactory;
 
   let sut: KanbanBoard;
 
   beforeEach(() => {
     taskFactory = jest.fn() as unknown as TaskFactory;
-    taskFactory.newCollection = jest.fn().mockImplementation((a, b) => new EmojiTaskCollection(a, b));
+    taskFactory.newCollection = jest
+      .fn()
+      .mockImplementation((a, b) => new EmojiTaskCollection(a, b));
 
     jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
   });
@@ -38,7 +39,12 @@ describe('kanban board', () => {
   });
 
   it('initialises with contents and archive', () => {
-    sut = new KanbanBoard(taskFactory, 'example.md', '## Example Header\n\n- [ ] Example task', '## Archive\n\n- [x] Archived task');
+    sut = new KanbanBoard(
+      taskFactory,
+      'example.md',
+      '## Example Header\n\n- [ ] Example task',
+      '## Archive\n\n- [x] Archived task'
+    );
 
     const markdown = sut.toString();
     expect(markdown).toContain('## Upcoming');
@@ -67,10 +73,15 @@ describe('kanban board', () => {
     expect(tasks1.getAllTasks().length).toEqual(1);
   });
 
-    it('gets an archived task collection and uses the cached object', () => {
+  it('gets an archived task collection and uses the cached object', () => {
     const newCollection = jest.spyOn(taskFactory, 'newCollection');
 
-    sut = new KanbanBoard(taskFactory, 'example.md', '## Example Header\n\n- [ ] Example task\n- [ ] Another example task', '## Archive\n\n- [x] Archived task');
+    sut = new KanbanBoard(
+      taskFactory,
+      'example.md',
+      '## Example Header\n\n- [ ] Example task\n- [ ] Another example task',
+      '## Archive\n\n- [x] Archived task'
+    );
 
     const tasks1 = sut.getArchive();
     const tasks2 = sut.getArchive();
@@ -79,5 +90,4 @@ describe('kanban board', () => {
     expect(tasks1).toEqual(tasks2);
     expect(tasks1.getAllTasks().length).toEqual(1);
   });
-
 });

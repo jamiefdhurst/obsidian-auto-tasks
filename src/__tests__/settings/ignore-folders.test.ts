@@ -6,7 +6,6 @@ import { IgnoreFolders } from '../../settings/ignore-folders';
 const WAIT_TIME: number = 20;
 
 describe('Ignore Folders', () => {
-
   let app: App;
   let plugin: AutoTasks;
   let settings: ISettings;
@@ -40,7 +39,9 @@ describe('Ignore Folders', () => {
   it('displays an empty list when opened', () => {
     sut.display();
 
-    expect(el.innerHTML).toEqual('<div class="at--setting-existing-container"></div><div class="at--setting-button-container"><div class="at--setting-controls-wrapper"><input type="text"><button class="button">Add folder</button></div></div>');
+    expect(el.innerHTML).toEqual(
+      '<div class="at--setting-existing-container"></div><div class="at--setting-button-container"><div class="at--setting-controls-wrapper"><input type="text"><button class="button">Add folder</button></div></div>'
+    );
   });
 
   it('displays existing settings when provided', () => {
@@ -66,7 +67,7 @@ describe('Ignore Folders', () => {
     inputEl.value = 'folder-4';
     const buttonEl = el.find('.at--setting-controls-wrapper button') as HTMLButtonElement;
     buttonEl.dispatchEvent(new Event('click'));
-    await new Promise(r => setTimeout(r, WAIT_TIME));
+    await new Promise((r) => setTimeout(r, WAIT_TIME));
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');
@@ -86,9 +87,11 @@ describe('Ignore Folders', () => {
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-2">');
     expect(el.innerHTML).toContain('data-setting="folder-2"');
 
-    const aEl = el.find('.at--setting-existing-item a[data-setting="folder-2"]') as HTMLButtonElement;
+    const aEl = el.find(
+      '.at--setting-existing-item a[data-setting="folder-2"]'
+    ) as HTMLButtonElement;
     aEl.dispatchEvent(new Event('click'));
-    await new Promise(r => setTimeout(r, WAIT_TIME));
+    await new Promise((r) => setTimeout(r, WAIT_TIME));
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="folder-1">');

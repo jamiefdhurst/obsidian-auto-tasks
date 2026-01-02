@@ -4,7 +4,6 @@ import { KanbanProvider } from './provider';
 const DEFAULT_TIMEOUT = 5000;
 
 export class Watcher {
-
   private kanban: KanbanProvider;
   private timeouts: Map<string, number> = new Map();
   private timeoutValue: number;

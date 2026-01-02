@@ -17,9 +17,15 @@ export class IgnoreFolders extends IgnoreComponent {
 
   createAddControls(): void {
     const controlsWrapperEl = this.buttonContainerEl.createDiv('at--setting-controls-wrapper');
-    this.addEntryInputEl = controlsWrapperEl.createEl('input', {type: 'text'});
-    new Suggest(this.app, this.folders.filter(folder => this.settings.kanbanIgnoreFolders.indexOf(folder.path) === -1), this.addEntryInputEl);
-    const addEl = controlsWrapperEl.createEl('button', {cls: 'button', text: 'Add folder'});
+    this.addEntryInputEl = controlsWrapperEl.createEl('input', { type: 'text' });
+    new Suggest(
+      this.app,
+      this.folders.filter(
+        (folder) => this.settings.kanbanIgnoreFolders.indexOf(folder.path) === -1
+      ),
+      this.addEntryInputEl
+    );
+    const addEl = controlsWrapperEl.createEl('button', { cls: 'button', text: 'Add folder' });
     addEl.addEventListener('click', (event: MouseEvent) => {
       this.handleAddIgnoredEntry(this.addEntryInputEl.value);
       this.addEntryInputEl.value = '';
