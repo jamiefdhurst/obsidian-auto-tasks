@@ -21,10 +21,8 @@ export class TaskFactory {
       ? new DataViewTaskCollection(contents, addBoardHeaders)
       : new EmojiTaskCollection(contents, addBoardHeaders);
   }
-  
+
   newTask(line: string): Task {
-    return this.dataView
-      ? new DataViewTask(line)
-      : new EmojiTask(line);
+    return this.dataView ? new DataViewTask(line) : new EmojiTask(line);
   }
 }

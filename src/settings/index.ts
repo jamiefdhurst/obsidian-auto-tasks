@@ -1,6 +1,4 @@
-export type IPeriodicity = 
-  | 'daily'
-  | 'weekly';
+export type IPeriodicity = 'daily' | 'weekly';
 
 export interface IPeriodicitySettings {
   addDue: boolean;

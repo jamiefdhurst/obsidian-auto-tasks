@@ -5,12 +5,11 @@ import { Task } from './task';
 const METADATA_CHARS: string = '📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅';
 const TASK_COMPLETE: RegExp = /^-\s\[x\]/;
 const TASK_DUE_DATE: RegExp = /\s📅\s(\d{4}-\d{2}-\d{2})/;
-const TASK_NAME: RegExp = /^(-\s\[[x\s]\]\s)(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|$)/;
+const TASK_NAME: RegExp = /^(-\s\[[x\s]\]\s)(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|$)/u;
 
 export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 
 export class EmojiTask extends Task {
-
   getCompletedDate(): string | undefined {
     const meta = this.getMetadata();
     return meta.get('✅');
@@ -19,7 +18,7 @@ export class EmojiTask extends Task {
   getDueDate(): string | undefined {
     const meta = this.getMetadata();
     return meta.get('📅');
-  };
+  }
 
   getMetadata(): Map<string, string> {
     const map = new Map<string, string>();

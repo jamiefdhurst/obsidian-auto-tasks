@@ -3,7 +3,6 @@ import { KanbanProvider } from '../../kanban/provider';
 import { Watcher } from '../../kanban/watcher';
 
 describe('kanban watcher', () => {
-
   let sut: Watcher;
   let kanban: KanbanProvider;
 
@@ -13,7 +12,7 @@ describe('kanban watcher', () => {
 
     sut = new Watcher(kanban, 20);
   });
-  
+
   it('initialises with default timeout', () => {
     expect(new Watcher(kanban)).toBeInstanceOf(Watcher);
   });
@@ -22,10 +21,10 @@ describe('kanban watcher', () => {
     const run = jest.spyOn(kanban, 'synchroniseTasks');
     const file = new TFile();
     sut.notifyCreate(file);
-    
+
     expect(run).not.toHaveBeenCalled();
 
-    await new Promise(r => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).toHaveBeenCalledWith([file]);
   });
 
@@ -33,10 +32,10 @@ describe('kanban watcher', () => {
     const run = jest.spyOn(kanban, 'synchroniseTasks');
     const file = new TFile();
     sut.notifyModify(file);
-    
+
     expect(run).not.toHaveBeenCalled();
 
-    await new Promise(r => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).toHaveBeenCalledWith([file]);
   });
 
@@ -45,10 +44,10 @@ describe('kanban watcher', () => {
     const file = new TFile();
 
     sut.notifyModify(file);
-    await new Promise(r => setTimeout(r, 5));
+    await new Promise((r) => setTimeout(r, 5));
     sut.notifyModify(file);
-    
-    await new Promise(r => setTimeout(r, 20));
+
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).toHaveBeenCalledTimes(1);
     expect(run).toHaveBeenCalledWith([file]);
   });
@@ -61,10 +60,10 @@ describe('kanban watcher', () => {
     file2.name = 'file2.md';
 
     sut.notifyModify(file1);
-    await new Promise(r => setTimeout(r, 5));
+    await new Promise((r) => setTimeout(r, 5));
     sut.notifyModify(file2);
-    
-    await new Promise(r => setTimeout(r, 20));
+
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).toHaveBeenCalledTimes(2);
   });
 
@@ -72,10 +71,10 @@ describe('kanban watcher', () => {
     const run = jest.spyOn(kanban, 'synchroniseTasks');
     const file = new TFile();
     sut.notifyRename(file, 'oldname.md');
-    
+
     expect(run).not.toHaveBeenCalled();
 
-    await new Promise(r => setTimeout(r, 20));
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).toHaveBeenCalledWith([file]);
   });
 
@@ -85,11 +84,11 @@ describe('kanban watcher', () => {
     file.name = 'newname.md';
 
     sut.notifyRename(file, 'oldname.md');
-    await new Promise(r => setTimeout(r, 5));
+    await new Promise((r) => setTimeout(r, 5));
     file.name = 'anothernewname.md';
     sut.notifyRename(file, 'newname.md');
-    
-    await new Promise(r => setTimeout(r, 20));
+
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).toHaveBeenCalledTimes(1);
     expect(run).toHaveBeenCalledWith([file]);
   });
@@ -99,21 +98,20 @@ describe('kanban watcher', () => {
     const file = new TFile();
 
     sut.notifyDelete(file);
-    
-    await new Promise(r => setTimeout(r, 20));
+
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).not.toHaveBeenCalled();
   });
 
   it('notifies delete with existing timeout', async () => {
     const run = jest.spyOn(kanban, 'synchroniseTasks');
     const file = new TFile();
-    
+
     sut.notifyModify(file);
-    await new Promise(r => setTimeout(r, 10));
+    await new Promise((r) => setTimeout(r, 10));
     sut.notifyDelete(file);
-    
-    await new Promise(r => setTimeout(r, 20));
+
+    await new Promise((r) => setTimeout(r, 20));
     expect(run).not.toHaveBeenCalled();
   });
-
 });

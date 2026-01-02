@@ -1,4 +1,4 @@
-import { App, TFolder } from 'obsidian';
+import { App } from 'obsidian';
 import AutoTasks from '../..';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { IgnoreMatches } from '../../settings/ignore-matches';
@@ -6,7 +6,6 @@ import { IgnoreMatches } from '../../settings/ignore-matches';
 const WAIT_TIME: number = 20;
 
 describe('Ignore Matches', () => {
-
   let app: App;
   let plugin: AutoTasks;
   let settings: ISettings;
@@ -28,7 +27,9 @@ describe('Ignore Matches', () => {
   it('displays an empty list when opened', () => {
     sut.display();
 
-    expect(el.innerHTML).toEqual('<div class="at--setting-existing-container"></div><div class="at--setting-button-container"><div class="at--setting-controls-wrapper"><input type="text"><button class="button">Add entry</button></div></div>');
+    expect(el.innerHTML).toEqual(
+      '<div class="at--setting-existing-container"></div><div class="at--setting-button-container"><div class="at--setting-controls-wrapper"><input type="text"><button class="button">Add entry</button></div></div>'
+    );
   });
 
   it('displays existing settings when provided', () => {
@@ -54,7 +55,7 @@ describe('Ignore Matches', () => {
     inputEl.value = 'foo';
     const buttonEl = el.find('.at--setting-controls-wrapper button') as HTMLButtonElement;
     buttonEl.dispatchEvent(new Event('click'));
-    await new Promise(r => setTimeout(r, WAIT_TIME));
+    await new Promise((r) => setTimeout(r, WAIT_TIME));
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="^Meeting:">');
@@ -76,7 +77,7 @@ describe('Ignore Matches', () => {
 
     const aEl = el.find('.at--setting-existing-item a[data-setting="bar"]') as HTMLButtonElement;
     aEl.dispatchEvent(new Event('click'));
-    await new Promise(r => setTimeout(r, WAIT_TIME));
+    await new Promise((r) => setTimeout(r, WAIT_TIME));
 
     expect(el.innerHTML).toContain('<div class="at--setting-existing-item">');
     expect(el.innerHTML).toContain('<input type="text" readonly="readonly" value="foo">');

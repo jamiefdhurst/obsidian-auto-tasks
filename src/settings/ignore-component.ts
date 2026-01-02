@@ -8,9 +8,9 @@ export abstract class IgnoreComponent {
   protected settings: ISettings;
   protected el: HTMLElement;
 
-  protected existingContainerEl: HTMLElement;
-  protected buttonContainerEl: HTMLElement;
-  protected addEntryInputEl: HTMLInputElement;
+  protected existingContainerEl: HTMLElement = createDiv();
+  protected buttonContainerEl: HTMLElement = createDiv();
+  protected addEntryInputEl: HTMLInputElement = createEl('input');
 
   constructor(app: App, plugin: AutoTasks, el: HTMLElement) {
     this.app = app;
@@ -22,8 +22,8 @@ export abstract class IgnoreComponent {
 
   display(): void {
     this.el.empty();
-    this.existingContainerEl = this.el.createDiv({cls: 'at--setting-existing-container'});
-    this.buttonContainerEl = this.el.createDiv({cls: 'at--setting-button-container'});
+    this.existingContainerEl = this.el.createDiv({ cls: 'at--setting-existing-container' });
+    this.buttonContainerEl = this.el.createDiv({ cls: 'at--setting-button-container' });
 
     this.createIgnoredEntries();
     this.createAddControls();
@@ -33,13 +33,19 @@ export abstract class IgnoreComponent {
 
   createIgnoredEntries(): void {
     for (const entry of this.getIgnoredSetting()) {
-      const existingWrapperEl = this.existingContainerEl.createDiv({cls: 'at--setting-existing-wrapper'});
-      const existingItemEl = existingWrapperEl.createDiv({cls: 'at--setting-existing-item'});
-      const existingItemControlsEl = existingItemEl.createDiv({cls: 'at--setting-existing-controls'});
-      const existingItemInputEl = existingItemControlsEl.createEl('input', {type: 'text'});
+      const existingWrapperEl = this.existingContainerEl.createDiv({
+        cls: 'at--setting-existing-wrapper',
+      });
+      const existingItemEl = existingWrapperEl.createDiv({ cls: 'at--setting-existing-item' });
+      const existingItemControlsEl = existingItemEl.createDiv({
+        cls: 'at--setting-existing-controls',
+      });
+      const existingItemInputEl = existingItemControlsEl.createEl('input', { type: 'text' });
       existingItemInputEl.setAttribute('readonly', 'readonly');
       existingItemInputEl.setAttribute('value', entry);
-      const existingItemButtonsEl = existingItemEl.createDiv({cls: 'at--setting-existing-buttons'});
+      const existingItemButtonsEl = existingItemEl.createDiv({
+        cls: 'at--setting-existing-buttons',
+      });
       const deleteEl = existingItemButtonsEl.createEl('a');
       setIcon(deleteEl, 'lucide-trash-2');
       deleteEl.setAttribute('data-setting', entry);
@@ -52,8 +58,8 @@ export abstract class IgnoreComponent {
 
   createAddControls(): void {
     const controlsWrapperEl = this.buttonContainerEl.createDiv('at--setting-controls-wrapper');
-    this.addEntryInputEl = controlsWrapperEl.createEl('input', {type: 'text'});
-    const addEl = controlsWrapperEl.createEl('button', {cls: 'button', text: 'Add entry'});
+    this.addEntryInputEl = controlsWrapperEl.createEl('input', { type: 'text' });
+    const addEl = controlsWrapperEl.createEl('button', { cls: 'button', text: 'Add entry' });
     addEl.addEventListener('click', (event: MouseEvent) => {
       this.handleAddIgnoredEntry(this.addEntryInputEl.value);
       this.addEntryInputEl.value = '';
@@ -75,5 +81,4 @@ export abstract class IgnoreComponent {
     await this.plugin.updateSettings(this.settings);
     this.display();
   }
-
 }

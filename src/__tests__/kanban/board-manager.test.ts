@@ -8,7 +8,6 @@ import { TaskFactory } from '../../tasks/factory';
 import { ObsidianVault } from '../../types';
 
 describe('kanban board-manager', () => {
-
   let dummyFile: TFile;
 
   let metadataCache: MetadataCache;
@@ -18,7 +17,9 @@ describe('kanban board-manager', () => {
 
   beforeEach(() => {
     const taskFactory = jest.fn as unknown as TaskFactory;
-    taskFactory.newCollection = jest.fn().mockImplementation((a, b) => new EmojiTaskCollection(a, b));
+    taskFactory.newCollection = jest
+      .fn()
+      .mockImplementation((a, b) => new EmojiTaskCollection(a, b));
 
     jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(Object.assign({}, DEFAULT_SETTINGS));
 
@@ -32,7 +33,7 @@ describe('kanban board-manager', () => {
     sut = new KanbanBoardManager(vault, metadataCache, taskFactory);
   });
 
-  it('returns nothing when it can\'t find any boards', () => {
+  it("returns nothing when it can't find any boards", () => {
     vault.getFiles = jest.fn().mockReturnValue([new TFile()]);
     metadataCache.getFileCache = jest.fn().mockReturnValue(null);
 
@@ -48,15 +49,17 @@ describe('kanban board-manager', () => {
     files[2].path = 'example-3.md';
     files[3].path = 'example-4.md';
     vault.getFiles = jest.fn().mockReturnValue(files);
-    const frontmatter1: FrontMatterCache = {}
-    const frontmatter2: FrontMatterCache = {}
-    const frontmatter3: FrontMatterCache = {}
+    const frontmatter1: FrontMatterCache = {};
+    const frontmatter2: FrontMatterCache = {};
+    const frontmatter3: FrontMatterCache = {};
     frontmatter2[KANBAN_PROPERTY_NAME] = 'foobar';
     frontmatter3[KANBAN_PROPERTY_NAME] = KANBAN_PROPERTY_VALUE;
-    metadataCache.getFileCache = jest.fn().mockReturnValueOnce({frontmatter: undefined})
-      .mockReturnValueOnce({frontmatter: frontmatter1})
-      .mockReturnValueOnce({frontmatter: frontmatter2})
-      .mockReturnValueOnce({frontmatter: frontmatter3});
+    metadataCache.getFileCache = jest
+      .fn()
+      .mockReturnValueOnce({ frontmatter: undefined })
+      .mockReturnValueOnce({ frontmatter: frontmatter1 })
+      .mockReturnValueOnce({ frontmatter: frontmatter2 })
+      .mockReturnValueOnce({ frontmatter: frontmatter3 });
 
     const result = sut.getAllBoards();
 
@@ -68,9 +71,7 @@ describe('kanban board-manager', () => {
     vault.getFileByPath = jest.fn();
     jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => null);
 
-    await expect(sut.get('example.md'))
-      .rejects
-      .toThrow(KanbanBoardOpenError);
+    await expect(sut.get('example.md')).rejects.toThrow(KanbanBoardOpenError);
   });
 
   it('returns a valid board', async () => {
@@ -89,12 +90,16 @@ describe('kanban board-manager', () => {
     vault.getFileByPath = jest.fn();
     jest.spyOn(vault, 'getFileByPath').mockImplementation((_) => dummyFile);
     vault.read = jest.fn();
-    jest.spyOn(vault, 'read').mockImplementation(async (_) => '## Default List\n- [ ] Some task or another\n\n\n***\n## Archive\n\n- [x] Archived task');
+    jest
+      .spyOn(vault, 'read')
+      .mockImplementation(
+        async (_) =>
+          '## Default List\n- [ ] Some task or another\n\n\n***\n## Archive\n\n- [x] Archived task'
+      );
 
     const board = await sut.get('example.md');
 
     expect(board.getFileName()).toBe('example.md');
     expect(board.getArchive().getAllTasks().length).toEqual(1);
   });
-
 });

@@ -3,8 +3,17 @@ import AutoTasks from '..';
 import { Task } from './task';
 
 const METADATA_SETS: string[] = [
-  'due', 'created', 'scheduled', 'start', 'completion', 'cancelled',
-  'priority', 'repeat', 'onCompletion', 'id', 'dependsOn',
+  'due',
+  'created',
+  'scheduled',
+  'start',
+  'completion',
+  'cancelled',
+  'priority',
+  'repeat',
+  'onCompletion',
+  'id',
+  'dependsOn',
 ];
 const TASK_COMPLETE: RegExp = /^-\s\[x\]/;
 const TASK_DUE_DATE: RegExp = /\s\[due::\s(\d{4}-\d{2}-\d{2})\]/;
@@ -13,7 +22,6 @@ const TASK_NAME: RegExp = /^(-\s\[[x\s]\]\s)(.*?)(?:\s\[[A-Za-z]+::|$)/;
 export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 
 export class DataViewTask extends Task {
-
   getCompletedDate(): string | undefined {
     const meta = this.getMetadata();
     return meta.get('completion');
@@ -22,7 +30,7 @@ export class DataViewTask extends Task {
   getDueDate(): string | undefined {
     const meta = this.getMetadata();
     return meta.get('due');
-  };
+  }
 
   getMetadata(): Map<string, string> {
     const map = new Map<string, string>();
@@ -70,7 +78,10 @@ export class DataViewTask extends Task {
     const complete = this.complete ? 'x' : ' ';
     let metadata = this.metadata;
     if (this.dueDate) {
-      metadata = metadata.replace(TASK_DUE_DATE, ` [due:: ${this.dueDate.format(DUE_DATE_FORMAT)}]`);
+      metadata = metadata.replace(
+        TASK_DUE_DATE,
+        ` [due:: ${this.dueDate.format(DUE_DATE_FORMAT)}]`
+      );
     }
 
     return `- [${complete}] ${carriedOver}${this.name}${metadata}`;

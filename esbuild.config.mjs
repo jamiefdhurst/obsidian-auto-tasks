@@ -20,6 +20,7 @@ const context = await esbuild.context({
   external: [
     'obsidian',
     'electron',
+    'node:child_process',
     '@codemirror/autocomplete',
     '@codemirror/collab',
     '@codemirror/commands',
@@ -39,6 +40,7 @@ const context = await esbuild.context({
   treeShaking: true,
   mainFields: ['module', 'main'],
   outfile: 'main.js',
+  minify: prod
 });
 
 if (prod) {

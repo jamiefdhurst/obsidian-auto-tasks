@@ -14,7 +14,13 @@ export class TasksProvider {
   private weeklyNote: WeeklyNote;
   private factory: TaskFactory;
 
-  constructor(vault: ObsidianVault, kanban: KanbanProvider, taskFactory: TaskFactory, dailyNote?: DailyNote, weeklyNote?: WeeklyNote) {
+  constructor(
+    vault: ObsidianVault,
+    kanban: KanbanProvider,
+    taskFactory: TaskFactory,
+    dailyNote?: DailyNote,
+    weeklyNote?: WeeklyNote
+  ) {
     this.vault = vault;
     this.kanban = kanban;
     this.factory = taskFactory;
@@ -27,13 +33,19 @@ export class TasksProvider {
     await this.checkAndCreateForSingleNote(settings, settings.daily, file, this.dailyNote);
   }
 
-  private async checkAndCreateForSingleNote(settings: ISettings, periodicitySetting: IPeriodicitySettings, file: TAbstractFile, cls: Note): Promise<void> {
+  private async checkAndCreateForSingleNote(
+    settings: ISettings,
+    periodicitySetting: IPeriodicitySettings,
+    file: TAbstractFile,
+    cls: Note
+  ): Promise<void> {
     if (periodicitySetting.available && periodicitySetting.carryOver && cls.isValid(file)) {
-      
       // Get the previous entry
       const previousEntryContents: string = await this.vault.read(cls.getPrevious());
-      const tasks: Task[] = (this.factory.newCollection(previousEntryContents)).getTasksFromLists(periodicitySetting.searchHeaders);
-      let tasksToAdd: Task[] = tasks.filter(task => !task.isComplete());
+      const tasks: Task[] = this.factory
+        .newCollection(previousEntryContents)
+        .getTasksFromLists(periodicitySetting.searchHeaders);
+      let tasksToAdd: Task[] = tasks.filter((task) => !task.isComplete());
 
       // Find any tasks that are due elsewhere in other files, pull these from the central board
       if (settings.tasksAvailable && settings.kanbanSync && periodicitySetting.addDue) {
@@ -42,7 +54,11 @@ export class TasksProvider {
           const boardTasks = board.getTaskCollection();
           for (const task of boardTasks.getTasksFromLists([UPCOMING, DUE, PROGRESS])) {
             const dueDate = task.getDueDate();
-            if (dueDate && moment(dueDate).isBefore(cls.getNextDate()) && tasksToAdd.find(t => t.equals(task)) === undefined) {
+            if (
+              dueDate &&
+              moment(dueDate).isBefore(cls.getNextDate()) &&
+              tasksToAdd.find((t) => t.equals(task)) === undefined
+            ) {
               tasksToAdd.push(task);
             }
           }
@@ -51,13 +67,16 @@ export class TasksProvider {
 
       // Add the carry over prefix if its set
       if (settings.carryOverPrefix) {
-        tasksToAdd = tasksToAdd.map(task => task.markCarriedOver());
+        tasksToAdd = tasksToAdd.map((task) => task.markCarriedOver());
       }
-      
+
       // Add them into the new entry
       await this.vault.process(cls.getCurrent(), (contents) => {
         if (contents.indexOf(periodicitySetting.header + '\n') > -1) {
-          return contents.replace(periodicitySetting.header + '\n', `${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}\n`);
+          return contents.replace(
+            periodicitySetting.header + '\n',
+            `${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}\n`
+          );
         }
 
         return `${contents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`;

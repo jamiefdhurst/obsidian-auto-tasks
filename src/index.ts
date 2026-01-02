@@ -1,5 +1,9 @@
 import { Notice, Plugin, TFile, type PluginManifest } from 'obsidian';
-import { ObsidianAppWithPlugins, PERIODIC_NOTES_EVENT_SETTING_UPDATED, PeriodicNotesPluginAdapter } from 'obsidian-periodic-notes-provider';
+import {
+  ObsidianAppWithPlugins,
+  PERIODIC_NOTES_EVENT_SETTING_UPDATED,
+  PeriodicNotesPluginAdapter,
+} from 'obsidian-periodic-notes-provider';
 import { SETTINGS_UPDATED } from './events';
 import { KanbanProvider } from './kanban/provider';
 import { KanbanPluginAdapter } from './plugins/kanban';
@@ -40,7 +44,7 @@ export default class AutoTasks extends Plugin {
   static getSettings(): ISettings {
     return AutoTasks.instance.getSettings();
   }
-  
+
   async onload(): Promise<void> {
     this.updateSettings = this.updateSettings.bind(this);
 
@@ -62,36 +66,48 @@ export default class AutoTasks extends Plugin {
 
     // Convert and setup settings from plugins
     const workspace: ObsidianWorkspace = this.app.workspace;
-    this.registerEvent(workspace.on(PERIODIC_NOTES_EVENT_SETTING_UPDATED, this.syncPeriodicNotesSettings.bind(this)));
+    this.registerEvent(
+      workspace.on(PERIODIC_NOTES_EVENT_SETTING_UPDATED, this.syncPeriodicNotesSettings.bind(this))
+    );
     this.syncPeriodicNotesSettings();
 
     // Copy tasks over when a new daily/weekly note is created
-    this.registerEvent(this.app.vault.on('create', (file) => {
-      this.tasks.checkAndCopyTasks(this.settings, file);
-    }));
+    this.registerEvent(
+      this.app.vault.on('create', (file) => {
+        this.tasks.checkAndCopyTasks(this.settings, file);
+      })
+    );
 
     // Sync all outstanding tasks now to the Kanban board
     this.kanban.synchroniseTasks();
-    this.registerEvent(this.app.vault.on('create', (file) => {
-      if (file instanceof TFile && file.name !== this.settings.kanbanFile) {
-        this.kanban.getWatcher().notifyCreate(file);
-      }
-    }));
-    this.registerEvent(this.app.vault.on('modify', (file) => {
-      if (file instanceof TFile && file.name !== this.settings.kanbanFile) {
-        this.kanban.getWatcher().notifyModify(file);
-      }
-    }));
-    this.registerEvent(this.app.vault.on('rename', (file, oldFileName) => {
-      if (file instanceof TFile) {
-        this.kanban.getWatcher().notifyRename(file, oldFileName);
-      }
-    }));
-    this.registerEvent(this.app.vault.on('delete', (file) => {
-      if (file instanceof TFile) {
-        this.kanban.getWatcher().notifyDelete(file);
-      }
-    }));
+    this.registerEvent(
+      this.app.vault.on('create', (file) => {
+        if (file instanceof TFile && file.name !== this.settings.kanbanFile) {
+          this.kanban.getWatcher().notifyCreate(file);
+        }
+      })
+    );
+    this.registerEvent(
+      this.app.vault.on('modify', (file) => {
+        if (file instanceof TFile && file.name !== this.settings.kanbanFile) {
+          this.kanban.getWatcher().notifyModify(file);
+        }
+      })
+    );
+    this.registerEvent(
+      this.app.vault.on('rename', (file, oldFileName) => {
+        if (file instanceof TFile) {
+          this.kanban.getWatcher().notifyRename(file, oldFileName);
+        }
+      })
+    );
+    this.registerEvent(
+      this.app.vault.on('delete', (file) => {
+        if (file instanceof TFile) {
+          this.kanban.getWatcher().notifyDelete(file);
+        }
+      })
+    );
 
     // Add the settings tab
     this.addSettingTab(new AutoTasksSettingsTab(this.app, this, this.kanbanPlugin, this.kanban));
@@ -102,11 +118,7 @@ export default class AutoTasks extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign(
-      {},
-      DEFAULT_SETTINGS,
-      await this.loadData()
-    );
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
   async updateSettings(settings: ISettings): Promise<void> {

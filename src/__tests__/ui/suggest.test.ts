@@ -8,18 +8,13 @@ class SuggestTestable extends Suggest {
 }
 
 describe('Suggest', () => {
-
   let sut: SuggestTestable;
 
   let el: HTMLInputElement;
 
   beforeEach(() => {
     const app = jest.fn() as unknown as App;
-    const options = [
-      new TFile(),
-      new TFile(),
-      new TFile(),
-    ];
+    const options = [new TFile(), new TFile(), new TFile()];
     options[0].path = 'foo.md';
     options[1].path = 'foo/Bar.md';
     options[2].path = 'baz.md';
@@ -47,8 +42,7 @@ describe('Suggest', () => {
 
   it('gets suggestions', () => {
     const suggestions = sut.exposeGetSuggestions('BA');
-    
+
     expect(suggestions).toEqual(['foo/Bar.md', 'baz.md']);
   });
-
 });

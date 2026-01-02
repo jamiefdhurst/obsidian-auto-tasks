@@ -13,7 +13,7 @@ export class KanbanProvider {
   private boardManager: KanbanBoardManager;
   private synchroniser: KanbanSynchroniser;
   private watcher: Watcher;
-  
+
   constructor(
     plugin: AutoTasks,
     vault: ObsidianVault,
@@ -40,7 +40,7 @@ export class KanbanProvider {
       const board: KanbanBoard = await this.boardManager.get(settings.kanbanFile);
 
       return this.synchroniser.process(board, files);
-    } catch (err) {
+    } catch {
       return;
     }
   }

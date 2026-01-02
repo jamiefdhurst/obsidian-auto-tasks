@@ -57,28 +57,26 @@ export class Setting {
   }
 
   addSearch(cb: (text: SearchComponent) => any) {
-    cb(new SearchComponent);
+    cb(new SearchComponent());
     return this;
   }
 
   addText(cb: (text: TextComponent) => any) {
-    cb(new TextComponent);
+    cb(new TextComponent());
     return this;
   }
 
   addToggle(cb: (toggle: ToggleComponent) => any) {
-    cb(new ToggleComponent);
+    cb(new ToggleComponent());
     return this;
   }
 }
 
-export class AbstractInputSuggest<T> {
-  close(): void {
-    
-  }
-};
+export class AbstractInputSuggest {
+  close(): void {}
+}
 
 export function setIcon(el: HTMLElement, icon: string): void {
-  const svg = el.createSvg('svg', {cls: 'icon'});
+  const svg = el.createSvg('svg', { cls: 'icon' });
   svg.setAttribute('data-icon', icon);
 }

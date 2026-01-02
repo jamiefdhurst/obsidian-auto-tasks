@@ -1,0 +1,48 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    ignore:
+      # Keep Obsidian at current version - controlled via package.json overrides
+      - dependency-name: "obsidian"
+    groups:
+      # Group all TypeScript/ESLint related updates
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
+          - "typescript"
+      # Group all Jest related updates
+      jest:
+        patterns:
+          - "jest*"
+          - "@types/jest"
+          - "ts-jest"
+      # Group development tools
+      dev-tools:
+        patterns:
+          - "prettier"
+          - "husky"
+          - "lint-staged"
+          - "eslint"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "⬆️ dependencies"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

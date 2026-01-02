@@ -48,7 +48,12 @@ export class KanbanBoardManager {
     }
 
     const boardContents = (await this.vault.read(file)).split(ARCHIVE_DIVIDER);
-    return new KanbanBoard(this.taskFactory, fileName, boardContents[0], boardContents.length > 1 ? boardContents[1] : '');
+    return new KanbanBoard(
+      this.taskFactory,
+      fileName,
+      boardContents[0],
+      boardContents.length > 1 ? boardContents[1] : ''
+    );
   }
 }
 
