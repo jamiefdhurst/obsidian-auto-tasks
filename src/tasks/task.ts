@@ -47,7 +47,7 @@ export abstract class Task {
     return this;
   }
 
-  protected abstract parse() : void;
+  protected abstract parse(): void;
 
   abstract toString(): string;
 }

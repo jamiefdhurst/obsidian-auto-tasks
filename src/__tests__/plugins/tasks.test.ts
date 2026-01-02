@@ -3,7 +3,6 @@ import { TasksPluginAdapter } from '../../plugins/tasks';
 import { ObsidianAppWithPlugins } from '../../types';
 
 describe('tasks plugin adapter', () => {
-
   let app: ObsidianAppWithPlugins;
 
   let sut: TasksPluginAdapter;
@@ -27,4 +26,4 @@ describe('tasks plugin adapter', () => {
   it('returns false when plugin is unavailable', () => {
     expect(sut.isEnabled()).toEqual(false);
   });
-})
+});

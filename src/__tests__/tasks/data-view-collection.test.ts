@@ -7,7 +7,6 @@ import { DataViewTask } from '../../tasks/data-view-task';
 import { DUE_DATE_FORMAT } from '../../tasks/task';
 
 describe('DataView task collection', () => {
-
   let settings: ISettings;
   let sut: DataViewTaskCollection;
 
@@ -19,7 +18,9 @@ describe('DataView task collection', () => {
 
   it('parses tasks correctly', () => {
     settings.carryOverPrefix = '[>]';
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n'
+    );
 
     expect(sut.getAllTasks().length).toEqual(5);
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
@@ -28,17 +29,29 @@ describe('DataView task collection', () => {
   });
 
   it('adds board headers', () => {
-    sut = new DataViewTaskCollection(`${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n`, true);
-    sut = new DataViewTaskCollection(`${UPCOMING}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`, true);
-    sut = new DataViewTaskCollection(`${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`, true);
-    sut = new DataViewTaskCollection(`${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`, true);
+    sut = new DataViewTaskCollection(
+      `${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n`,
+      true
+    );
+    sut = new DataViewTaskCollection(
+      `${UPCOMING}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`,
+      true
+    );
+    sut = new DataViewTaskCollection(
+      `${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`,
+      true
+    );
+    sut = new DataViewTaskCollection(
+      `${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`,
+      true
+    );
   });
 
   it('adds a new task to given header', () => {
     sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.add(new DataViewTask('- [ ] Task 2'), '## Header 1');
-    
+
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
   });
 
@@ -54,7 +67,11 @@ describe('DataView task collection', () => {
   it('adds a new task to due', () => {
     sut = new DataViewTaskCollection('', true);
 
-    sut.add(new DataViewTask(`- [ ] Due task [due:: ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}]`));
+    sut.add(
+      new DataViewTask(
+        `- [ ] Due task [due:: ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}]`
+      )
+    );
 
     expect(sut.getTasksFromLists([UPCOMING, PROGRESS, DONE]).length).toEqual(0);
     expect(sut.getTasksFromLists([DUE]).length).toEqual(1);
@@ -81,12 +98,14 @@ describe('DataView task collection', () => {
     sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.add(new DataViewTask('- [ ] Task 1'), '## Header 1');
-    
+
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(1);
   });
 
   it('gets all tasks', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     const result = sut.getAllTasks();
 
@@ -97,13 +116,17 @@ describe('DataView task collection', () => {
   });
 
   it('gets list when it exists', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getList(new DataViewTask('- [ ] Task 3'))).toEqual('## Header 2');
   });
 
   it('returns empty string when list does not exist', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getList(new DataViewTask('- [ ] Task 5'))).toEqual('');
   });
@@ -127,35 +150,45 @@ describe('DataView task collection', () => {
   });
 
   it('gets tasks from a list', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
     expect(sut.getTasksFromLists(['## Header 1', '## Header 2']).length).toEqual(4);
   });
 
   it('gets all tasks when no lists are passed in', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists([]).length).toEqual(4);
   });
 
   it('gets all tasks when empty string is passed in', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists(['']).length).toEqual(4);
   });
 
   it('returns nothing when the list does not exist', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists(['## Header 3']).length).toEqual(0);
   });
 
   it('moves task', () => {
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     sut.move(new DataViewTask('- [ ] Task 1'), '## Header 2');
-    
+
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(1);
     expect(sut.getTasksFromLists(['## Header 2']).length).toEqual(3);
   });
@@ -164,7 +197,7 @@ describe('DataView task collection', () => {
     sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new DataViewTask('- [ ] Task 1 [due:: 2024-10-10]'));
-    
+
     expect(sut.getAllTasks().length).toEqual(1);
     expect(sut.getAllTasks()[0].getDueDate()).toEqual('2024-10-10');
   });
@@ -173,17 +206,16 @@ describe('DataView task collection', () => {
     sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new DataViewTask('- [ ] Task 1 [completion:: 2024-10-10]'));
-    
+
     expect(sut.getAllTasks().length).toEqual(1);
     expect(sut.getAllTasks()[0].getCompletedDate()).toEqual('2024-10-10');
   });
-
 
   it('does not replace task when it is not found', () => {
     sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new DataViewTask('- [ ] Task 2 [due:: 2024-10-10]'));
-    
+
     expect(sut.getAllTasks().length).toEqual(1);
   });
 
@@ -197,14 +229,19 @@ describe('DataView task collection', () => {
 
   it('converts collection to string format', () => {
     settings.carryOverPrefix = '[>]';
-    sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n');
+    sut = new DataViewTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n'
+    );
 
     const result1 = sut.toString('\n\n\n');
     const result2 = sut.toString();
 
     expect(sut.getAllTasks()[3].getDueDate()).toEqual('2025-01-01');
-    expect(result1).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n\n\n\n');
-    expect(result2).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n\n');
+    expect(result1).toEqual(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n\n\n\n'
+    );
+    expect(result2).toEqual(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n\n'
+    );
   });
-
 });

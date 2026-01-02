@@ -1,7 +1,6 @@
 name: Build
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - 'main'
@@ -16,72 +15,81 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   Build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.PAT }}
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org/'
       - name: Install Dependencies
         run: |
           npm i
-      - name: Get Latest Version
-        id: latest
-        uses: gregziegan/fetch-latest-release@v2.0.0
-        continue-on-error: true
       - name: Calculate Next Version
-        id: calculate
-        uses: paulhatch/semantic-version@v5.3.0
-        with:
-          debug: true
-          tag_prefix: ""
-          version_format: "${major}.${minor}.${patch}"
-      - name: Determine Next Version
         id: version
-        uses: haya14busa/action-cond@v1
-        with:
-          cond: ${{ contains(steps.latest.outputs.name, '.') }}
-          if_true: ${{ steps.calculate.outputs.version }}
-          if_false: '0.0.1'
-      - name: Remove Leading "v" from Latest Version
-        if: ${{ contains(steps.latest.outputs.name, '.') }}
-        id: latest_clean
         run: |
-          export version=$(echo ${{ steps.latest.outputs.name }} | sed 's/^v//')
-          echo ::set-output name=name::$version
-      - name: Update Version in Files
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "\"version\": \"${{ steps.latest_clean.outputs.name }}\""
-          replace: "\"version\": \"${{ steps.version.outputs.value }}\""
-          include: "package.json"
+          chmod +x .github/scripts/calculate-version.sh
+          .github/scripts/calculate-version.sh
+      - name: Update Version in package.json
+        if: steps.version.outputs.should_release == 'true'
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version in package.json: $CURRENT_VERSION"
+          echo "New version: ${{ steps.version.outputs.version }}"
+          sed -i.bak "s/\"version\": \"$CURRENT_VERSION\"/\"version\": \"${{ steps.version.outputs.version }}\"/" package.json
+          rm package.json.bak 2>/dev/null || true
+          echo "Updated package.json"
       - name: Update Version Script
-        if: ${{ contains(steps.latest.outputs.name, '.') }}
-        run: VERSION=${{ steps.version.outputs.value }} npm run version
+        if: steps.version.outputs.should_release == 'true'
+        run: VERSION=${{ steps.version.outputs.version }} npm run version
       - name: File Save Delay
+        if: steps.version.outputs.should_release == 'true'
         uses: jakejarvis/wait-action@master
         with:
           time: '2s'
-      - name: Commit Version Changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Generate Changelog
+        if: steps.version.outputs.should_release == 'true'
+        uses: orhun/git-cliff-action@v4
         with:
-          commit_message: "[skip ci] Update version to v${{ steps.version.outputs.value }}"
+          config: cliff.toml
+          args: --verbose --tag ${{ steps.version.outputs.version }}
+        env:
+          OUTPUT: CHANGELOG.md
+      - name: Commit Version and Changelog Changes
+        if: steps.version.outputs.should_release == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[skip ci] Update version to v${{ steps.version.outputs.version }}"
+          file_pattern: "manifest.json package.json versions.json CHANGELOG.md"
       - name: Build
+        if: steps.version.outputs.should_release == 'true'
         run: npm run build
+      - name: Generate Release Notes
+        if: steps.version.outputs.should_release == 'true'
+        id: release_notes
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --verbose --latest --strip header
+        env:
+          OUTPUT: release_notes.md
       - name: Create Release
-        uses: ncipollo/release-action@v1.12.0
+        if: steps.version.outputs.should_release == 'true'
+        uses: ncipollo/release-action@v1.20.0
         with:
           allowUpdates: true
-          artifacts: 'main.js,manifest.json,styles.css'
+          artifacts: 'main.js,manifest.json'
+          bodyFile: 'release_notes.md'
           draft: false
           makeLatest: true
-          tag: ${{ steps.version.outputs.value }}
-          name: ${{ steps.version.outputs.value }}
+          tag: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}

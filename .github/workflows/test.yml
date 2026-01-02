@@ -17,27 +17,99 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+      - name: Validate Commit Messages
+        run: |
+          chmod +x .husky/commit-msg
+
+          # Get all commits in the PR
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Get commit hashes into an array
+          mapfile -t commit_hashes < <(git log $BASE_SHA..$HEAD_SHA --pretty=format:"%H")
+
+          if [ ${#commit_hashes[@]} -eq 0 ]; then
+            echo "✅ No commits to validate"
+            exit 0
+          fi
+
+          # Track validation results
+          invalid_commits=()
+          valid_count=0
+
+          # Validate each commit using the same hook used locally
+          for hash in "${commit_hashes[@]}"; do
+            message=$(git log -1 --pretty=format:"%s" "$hash")
+
+            # Write message to temp file
+            echo "$message" > /tmp/commit-msg.txt
+
+            # Validate using the commit-msg hook
+            if .husky/commit-msg /tmp/commit-msg.txt 2>&1 | grep -q "❌ Invalid"; then
+              echo "❌ $message"
+              invalid_commits+=("$hash|||$message")
+            else
+              echo "✅ $message"
+              valid_count=$((valid_count + 1))
+            fi
+          done
+
+          rm -f /tmp/commit-msg.txt
+
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+
+          # Report results
+          if [ ${#invalid_commits[@]} -eq 0 ]; then
+            echo "✅ All $valid_count commit(s) follow the convention"
+            exit 0
+          else
+            echo "❌ Found ${#invalid_commits[@]} invalid commit message(s):"
+            echo ""
+            for commit in "${invalid_commits[@]}"; do
+              hash="${commit%%|||*}"
+              msg="${commit#*|||}"
+              short_hash=$(echo "$hash" | cut -c1-7)
+              echo "  $short_hash: $msg"
+            done
+            echo ""
+            echo "See .github/COMMIT_CONVENTION.md for details on the commit message format"
+            exit 1
+          fi
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
+      - name: Calculate Version Impact
+        id: version
+        run: |
+          chmod +x .github/scripts/calculate-version.sh
+          .github/scripts/calculate-version.sh
       - name: Install Dependencies
         run: |
           npm i
+      - name: Security Audit
+        run: |
+          npm audit --audit-level=moderate
+        continue-on-error: true
+      - name: Build
+        run: |
+          npm run build
       - name: Test
         run: |
           npm run test-ci
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: tests
           path: junit.xml
       - name: Upload Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage
           path: coverage/cobertura-coverage.xml
@@ -49,16 +121,31 @@ jobs:
           files: |
             junit.xml
       - name: Create Code Coverage Report
-        uses: im-open/code-coverage-report-generator@4.9.0
+        uses: im-open/code-coverage-report-generator@v5.0.0
         with:
           reports: coverage/cobertura-coverage.xml
           reporttypes: MarkdownSummary
           title: Jest Code Coverage
       - name: Publish Code Coverage
-        uses: im-open/process-code-coverage-summary@v2.2.3
+        uses: im-open/process-code-coverage-summary@v2.3.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           summary-file: './coverage-results/Summary.md'
           check-name: 'Code Coverage'
           line-threshold: 80
           branch-threshold: 85
+      - name: Comment PR with Version Impact
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            ## 📦 Version Impact
+
+            **Current version:** `${{ steps.version.outputs.previous_version }}`
+            **Next version:** `${{ steps.version.outputs.version }}`
+            **Bump type:** `${{ steps.version.outputs.bump_type }}`
+            **Will release:** ${{ steps.version.outputs.should_release == 'true' && '✅ Yes' || '⚪️ No (non-releasable changes only)' }}
+
+            ---
+
+            <sub>This PR will ${{ steps.version.outputs.should_release == 'true' && format('trigger a **{0}** version bump from `{1}` to `{2}`', steps.version.outputs.bump_type, steps.version.outputs.previous_version, steps.version.outputs.version) || 'not trigger a release (only docs/test/chore/build/ci/style/revert changes)' }}</sub>
+          comment-tag: version_impact

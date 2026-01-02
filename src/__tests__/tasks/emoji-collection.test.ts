@@ -7,7 +7,6 @@ import { EmojiTask } from '../../tasks/emoji-task';
 import { DUE_DATE_FORMAT } from '../../tasks/task';
 
 describe('Emoji task collection', () => {
-
   let settings: ISettings;
   let sut: EmojiTaskCollection;
 
@@ -19,7 +18,9 @@ describe('Emoji task collection', () => {
 
   it('parses tasks correctly', () => {
     settings.carryOverPrefix = '[>]';
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n'
+    );
 
     expect(sut.getAllTasks().length).toEqual(5);
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
@@ -28,17 +29,29 @@ describe('Emoji task collection', () => {
   });
 
   it('adds board headers', () => {
-    sut = new EmojiTaskCollection(`${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n`, true);
-    sut = new EmojiTaskCollection(`${UPCOMING}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`, true);
-    sut = new EmojiTaskCollection(`${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`, true);
-    sut = new EmojiTaskCollection(`${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`, true);
+    sut = new EmojiTaskCollection(
+      `${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n`,
+      true
+    );
+    sut = new EmojiTaskCollection(
+      `${UPCOMING}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`,
+      true
+    );
+    sut = new EmojiTaskCollection(
+      `${UPCOMING}\n\n\n\n\n\n${DUE}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`,
+      true
+    );
+    sut = new EmojiTaskCollection(
+      `${DUE}\n\n\n\n\n\n${PROGRESS}\n\n\n\n\n\n${DONE}\n\n\n\n\n\n`,
+      true
+    );
   });
 
   it('adds a new task to given header', () => {
     sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.add(new EmojiTask('- [ ] Task 2'), '## Header 1');
-    
+
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
   });
 
@@ -54,7 +67,9 @@ describe('Emoji task collection', () => {
   it('adds a new task to due', () => {
     sut = new EmojiTaskCollection('', true);
 
-    sut.add(new EmojiTask(`- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`));
+    sut.add(
+      new EmojiTask(`- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`)
+    );
 
     expect(sut.getTasksFromLists([UPCOMING, PROGRESS, DONE]).length).toEqual(0);
     expect(sut.getTasksFromLists([DUE]).length).toEqual(1);
@@ -81,12 +96,14 @@ describe('Emoji task collection', () => {
     sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.add(new EmojiTask('- [ ] Task 1'), '## Header 1');
-    
+
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(1);
   });
 
   it('gets all tasks', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     const result = sut.getAllTasks();
 
@@ -97,13 +114,17 @@ describe('Emoji task collection', () => {
   });
 
   it('gets list when it exists', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getList(new EmojiTask('- [ ] Task 3'))).toEqual('## Header 2');
   });
 
   it('returns empty string when list does not exist', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getList(new EmojiTask('- [ ] Task 5'))).toEqual('');
   });
@@ -127,35 +148,45 @@ describe('Emoji task collection', () => {
   });
 
   it('gets tasks from a list', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(2);
     expect(sut.getTasksFromLists(['## Header 1', '## Header 2']).length).toEqual(4);
   });
 
   it('gets all tasks when no lists are passed in', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists([]).length).toEqual(4);
   });
 
   it('gets all tasks when empty string is passed in', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists(['']).length).toEqual(4);
   });
 
   it('returns nothing when the list does not exist', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     expect(sut.getTasksFromLists(['## Header 3']).length).toEqual(0);
   });
 
   it('moves task', () => {
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n'
+    );
 
     sut.move(new EmojiTask('- [ ] Task 1'), '## Header 2');
-    
+
     expect(sut.getTasksFromLists(['## Header 1']).length).toEqual(1);
     expect(sut.getTasksFromLists(['## Header 2']).length).toEqual(3);
   });
@@ -164,7 +195,7 @@ describe('Emoji task collection', () => {
     sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new EmojiTask('- [ ] Task 1 📅 2024-10-10'));
-    
+
     expect(sut.getAllTasks().length).toEqual(1);
     expect(sut.getAllTasks()[0].getDueDate()).toEqual('2024-10-10');
   });
@@ -173,7 +204,7 @@ describe('Emoji task collection', () => {
     sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new EmojiTask('- [ ] Task 1 ✅ 2024-10-10'));
-    
+
     expect(sut.getAllTasks().length).toEqual(1);
     expect(sut.getAllTasks()[0].getCompletedDate()).toEqual('2024-10-10');
   });
@@ -182,7 +213,7 @@ describe('Emoji task collection', () => {
     sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n');
 
     sut.replace(new EmojiTask('- [ ] Task 2 📅 2024-10-10'));
-    
+
     expect(sut.getAllTasks().length).toEqual(1);
   });
 
@@ -196,13 +227,18 @@ describe('Emoji task collection', () => {
 
   it('converts collection to string format', () => {
     settings.carryOverPrefix = '[>]';
-    sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n');
+    sut = new EmojiTaskCollection(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n'
+    );
 
     const result1 = sut.toString('\n\n\n');
     const result2 = sut.toString();
 
-    expect(result1).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n\n\n');
-    expect(result2).toEqual('## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n');
+    expect(result1).toEqual(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n\n\n'
+    );
+    expect(result2).toEqual(
+      '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n'
+    );
   });
-
 });

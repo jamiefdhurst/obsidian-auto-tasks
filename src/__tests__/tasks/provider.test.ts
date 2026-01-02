@@ -11,7 +11,6 @@ import { DUE_DATE_FORMAT } from '../../tasks/task';
 import { ObsidianVault } from '../../types';
 
 describe('tasks provider', () => {
-
   let vault: ObsidianVault;
   let kanban: KanbanProvider;
   let taskFactory: TaskFactory;
@@ -28,7 +27,9 @@ describe('tasks provider', () => {
     kanban = jest.fn() as unknown as KanbanProvider;
     kanban.getBoard = jest.fn();
     taskFactory = jest.fn() as unknown as TaskFactory;
-    taskFactory.newCollection = jest.fn().mockImplementation((a, b) => new EmojiTaskCollection(a, b));
+    taskFactory.newCollection = jest
+      .fn()
+      .mockImplementation((a, b) => new EmojiTaskCollection(a, b));
     dailyNote = jest.fn() as unknown as DailyNote;
     dailyNote.getCurrent = jest.fn();
     dailyNote.getNextDate = jest.fn();
@@ -43,7 +44,7 @@ describe('tasks provider', () => {
 
   it('initialises with default constructor', () => {
     expect(new TasksProvider(vault, kanban, taskFactory)).toBeInstanceOf(TasksProvider);
-  })
+  });
 
   it('does nothing when daily and weekly notes are unavailable', async () => {
     const isValid = jest.spyOn(dailyNote, 'isValid');
@@ -82,13 +83,17 @@ describe('tasks provider', () => {
     settings.daily.carryOver = true;
     settings.daily.header = '## Daily TODOs';
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
-    jest.spyOn(vault, 'read').mockResolvedValueOnce('## TODOs\n\n- [x] Complete 1\n- [ ] Incomplete 1\n- [ ] Incomplete 2');
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValueOnce(
+        '## TODOs\n\n- [x] Complete 1\n- [ ] Incomplete 1\n- [ ] Incomplete 2'
+      );
     const currentFile = new TFile();
     jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
     let result;
     const vaultProcess = jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
       result = fn('');
-      return Promise.resolve(result)
+      return Promise.resolve(result);
     });
 
     await sut.checkAndCopyTasks(settings, new TFile());
@@ -103,13 +108,17 @@ describe('tasks provider', () => {
     settings.carryOverPrefix = '[>]';
     settings.daily.header = '## Daily TODOs';
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
-    jest.spyOn(vault, 'read').mockResolvedValueOnce('## TODOs\n\n- [x] Complete 1\n- [ ] [>] Incomplete 1\n- [ ] Incomplete 2');
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValueOnce(
+        '## TODOs\n\n- [x] Complete 1\n- [ ] [>] Incomplete 1\n- [ ] Incomplete 2'
+      );
     const currentFile = new TFile();
     jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
     let result;
     const vaultProcess = jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
       result = fn('');
-      return Promise.resolve(result)
+      return Promise.resolve(result);
     });
 
     await sut.checkAndCopyTasks(settings, new TFile());
@@ -123,8 +132,7 @@ describe('tasks provider', () => {
     settings.daily.carryOver = true;
     settings.daily.header = '## Daily TODOs';
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
-    jest.spyOn(vault, 'read').mockResolvedValueOnce('')
-      .mockResolvedValueOnce('');
+    jest.spyOn(vault, 'read').mockResolvedValueOnce('').mockResolvedValueOnce('');
     const getBoard = jest.spyOn(kanban, 'getBoard');
 
     await sut.checkAndCopyTasks(settings, new TFile());
@@ -138,8 +146,7 @@ describe('tasks provider', () => {
     settings.daily.header = '## Daily TODOs';
     settings.tasksAvailable = true;
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
-    jest.spyOn(vault, 'read').mockResolvedValueOnce('')
-      .mockResolvedValueOnce('');
+    jest.spyOn(vault, 'read').mockResolvedValueOnce('').mockResolvedValueOnce('');
     const getBoard = jest.spyOn(kanban, 'getBoard');
 
     await sut.checkAndCopyTasks(settings, new TFile());
@@ -187,21 +194,31 @@ describe('tasks provider', () => {
     settings.kanbanFile = 'board.md';
     jest.spyOn(dailyNote, 'getNextDate').mockReturnValue(moment().startOf('day').add(1, 'day'));
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
-    jest.spyOn(vault, 'read').mockResolvedValueOnce(`## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`);
-    const board: KanbanBoard = new KanbanBoard(taskFactory, 'board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValueOnce(
+        `## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`
+      );
+    const board: KanbanBoard = new KanbanBoard(
+      taskFactory,
+      'board.md',
+      `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`
+    );
     jest.spyOn(kanban, 'getBoard').mockResolvedValueOnce(board);
     const currentFile = new TFile();
     jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
     let result;
     const vaultProcess = jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
       result = fn('');
-      return Promise.resolve(result)
+      return Promise.resolve(result);
     });
 
     await sut.checkAndCopyTasks(settings, new TFile());
 
     expect(vaultProcess).toHaveBeenCalledWith(currentFile, expect.any(Function));
-    expect(result).toEqual(`\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`)
+    expect(result).toEqual(
+      `\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`
+    );
   });
 
   it('adds any missing tasks under an existing header if it exists', async () => {
@@ -214,21 +231,32 @@ describe('tasks provider', () => {
     settings.kanbanFile = 'board.md';
     jest.spyOn(dailyNote, 'getNextDate').mockReturnValue(moment().startOf('day').add(1, 'day'));
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
-    jest.spyOn(vault, 'read').mockResolvedValueOnce(`## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`);
-    const board: KanbanBoard = new KanbanBoard(taskFactory, 'board.md', `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`)
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValueOnce(
+        `## TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}`
+      );
+    const board: KanbanBoard = new KanbanBoard(
+      taskFactory,
+      'board.md',
+      `${UPCOMING}\n\n- [ ] Not due task 📅 ${moment().add(10, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DUE}\n\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${PROGRESS}\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n\n\n\n${DONE}\n\n- [x] Complete task\n\n\n\n\n`
+    );
     jest.spyOn(kanban, 'getBoard').mockResolvedValueOnce(board);
     const currentFile = new TFile();
     jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
     let result;
     const vaultProcess = jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
-      result = fn('Some existing contents...\n\n## Daily TODOs\n\n## Some other content\n\nAnd something else...');
-      return Promise.resolve(result)
+      result = fn(
+        'Some existing contents...\n\n## Daily TODOs\n\n## Some other content\n\nAnd something else...'
+      );
+      return Promise.resolve(result);
     });
 
     await sut.checkAndCopyTasks(settings, new TFile());
 
     expect(vaultProcess).toHaveBeenCalledWith(currentFile, expect.any(Function));
-    expect(result).toEqual(`Some existing contents...\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n## Some other content\n\nAnd something else...`)
+    expect(result).toEqual(
+      `Some existing contents...\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n## Some other content\n\nAnd something else...`
+    );
   });
-
 });

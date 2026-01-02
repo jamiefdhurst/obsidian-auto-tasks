@@ -1,0 +1,18 @@
+# Build outputs
+main.js
+*.js.map
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Coverage
+coverage/
+
+# Generated files
+*.d.ts
+!src/**/*.d.ts
+
+# Logs
+*.log
