@@ -87,7 +87,7 @@ jobs:
         uses: ncipollo/release-action@v1.20.0
         with:
           allowUpdates: true
-          artifacts: 'main.js,manifest.json'
+          artifacts: 'main.js,manifest.json,styles.css'
           bodyFile: 'release_notes.md'
           draft: false
           makeLatest: true
