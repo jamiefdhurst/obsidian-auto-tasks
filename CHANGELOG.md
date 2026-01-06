@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-01-06
+
+### Added
+
+- feat: add loaded event (fde5ed3)
+- (f32efda)
+
+### Other
+
+- chore: update deps and workflows to match periodic-notes (3fb2701)
+- chore: fix issue with task factory checking dataview status before tasks plugin loaded (cbf23d8)
+- (3ef75c7)
+- chore: ensure build also releases styles file (7d3fb43)
+- chore: fix release notes in build step (6a2e55c)
+
 ## [0.4.1] - 2025-08-21
 
 ### Changed
