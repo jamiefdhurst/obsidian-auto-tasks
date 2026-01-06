@@ -35,6 +35,9 @@ export class TasksPluginAdapter {
   }
 
   private async loadSettings(): Promise<ITasksPluginSettings> {
+    if (!this.getPlugin()) {
+      return { taskFormat: 'tasksEmojiFormat' };
+    }
     return this.getPlugin().loadData();
   }
 }

@@ -4,7 +4,7 @@ import {
   PERIODIC_NOTES_EVENT_SETTING_UPDATED,
   PeriodicNotesPluginAdapter,
 } from 'obsidian-periodic-notes-provider';
-import { SETTINGS_UPDATED } from './events';
+import { LOADED, SETTINGS_UPDATED } from './events';
 import { KanbanProvider } from './kanban/provider';
 import { KanbanPluginAdapter } from './plugins/kanban';
 import { TasksPluginAdapter } from './plugins/tasks';
@@ -13,6 +13,7 @@ import { AutoTasksSettingsTab } from './settings/tab';
 import { TasksProvider } from './tasks/provider';
 import type { ObsidianApp, ObsidianVault, ObsidianWorkspace } from './types';
 import { TaskFactory } from './tasks/factory';
+import debug from './log';
 
 export default class AutoTasks extends Plugin {
   private settings: ISettings = DEFAULT_SETTINGS;
@@ -50,10 +51,10 @@ export default class AutoTasks extends Plugin {
 
     await this.loadSettings();
 
-    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+    this.app.workspace.onLayoutReady(await this.onLayoutReady.bind(this));
   }
 
-  onLayoutReady(): void {
+  async onLayoutReady(): Promise<void> {
     if (!this.periodicNotesPlugin.isEnabled()) {
       new Notice(
         'The Periodic Notes plugin must be installed and available for Auto Tasks to work.',
@@ -61,6 +62,8 @@ export default class AutoTasks extends Plugin {
       );
       return;
     }
+
+    debug('Starting initial layout and load');
 
     this.settings.tasksAvailable = this.tasksPlugin.isEnabled();
 
@@ -111,6 +114,9 @@ export default class AutoTasks extends Plugin {
 
     // Add the settings tab
     this.addSettingTab(new AutoTasksSettingsTab(this.app, this, this.kanbanPlugin, this.kanban));
+
+    this.app.workspace.trigger(LOADED);
+    debug('Initial layout and load complete');
   }
 
   getSettings(): ISettings {
