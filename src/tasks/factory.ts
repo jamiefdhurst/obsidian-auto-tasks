@@ -16,15 +16,11 @@ export class TaskFactory {
   }
 
   private async checkDataViewStatus() {
-    console.log('CHECKING DATAVIEW');
     this.dataView = await this.pluginAdapter.isDataViewFormat();
-    console.log('Dataview is ' + (this.dataView ? 'YES' : 'NO'));
   }
 
   newCollection(contents: string, addBoardHeaders?: boolean): TaskCollection {
-    console.log('About to check dataview...');
     this.checkDataViewStatus();
-    console.log('Checked dataview, returning collection');
     return this.dataView
       ? new DataViewTaskCollection(contents, addBoardHeaders)
       : new EmojiTaskCollection(contents, addBoardHeaders);

@@ -20,9 +20,9 @@
   "author": "Jamie Hurst <jamie@jamiehurst.co.uk>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jamiefdhurst/obsidian-inbox-organiser/issues"
+    "url": "https://github.com/jamiefdhurst/obsidian-auto-tasks/issues"
   },
-  "homepage": "https://github.com/jamiefdhurst/obsidian-inbox-organiser#readme",
+  "homepage": "https://github.com/jamiefdhurst/obsidian-auto-tasks#readme",
   "dependencies": {
     "obsidian-periodic-notes-provider": "^0.1.1"
   },
