@@ -76,12 +76,9 @@ jobs:
       - name: Generate Release Notes
         if: steps.version.outputs.should_release == 'true'
         id: release_notes
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --verbose --latest --strip header
-        env:
-          OUTPUT: release_notes.md
+        run: |
+          chmod +x .github/scripts/release-notes.sh
+          .github/scripts/release-notes.sh ${{ steps.version.outputs.version }}
       - name: Create Release
         if: steps.version.outputs.should_release == 'true'
         uses: ncipollo/release-action@v1.20.0
