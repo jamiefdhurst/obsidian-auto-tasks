@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/jamiefdhurst/obsidian-auto-tasks#readme",
   "dependencies": {
-    "obsidian-periodic-notes-provider": "^0.1.1"
+    "obsidian-periodic-notes-provider": "^1.0.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
