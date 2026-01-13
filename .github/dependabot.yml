@@ -7,6 +7,10 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 10
+    labels:
+      - "⬆️ dependencies"
+    assignees:
+      - "jamiefdhurst"
     commit-message:
       prefix: "chore"
       prefix-development: "chore"
@@ -43,6 +47,8 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "⬆️ dependencies"
+    assignees:
+      - "jamiefdhurst"
     commit-message:
       prefix: "chore"
       include: "scope"
