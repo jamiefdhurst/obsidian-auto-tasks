@@ -241,4 +241,183 @@ describe('Emoji task collection', () => {
       '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4\n- [ ] [>] Task 5\n\n'
     );
   });
+
+  describe('sub-tasks', () => {
+    it('parses sub-tasks with tab indentation', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [ ] Child task 1\n\t- [ ] Child task 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Parent task');
+      expect(tasks[0].hasChildren()).toBe(true);
+      expect(tasks[0].getChildren().length).toEqual(2);
+      expect(tasks[0].getChildren()[0].getName()).toEqual('Child task 1');
+      expect(tasks[0].getChildren()[1].getName()).toEqual('Child task 2');
+    });
+
+    it('parses sub-tasks with space indentation', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n  - [ ] Child task 1\n  - [ ] Child task 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].hasChildren()).toBe(true);
+      expect(tasks[0].getChildren().length).toEqual(2);
+    });
+
+    it('parses deeply nested sub-tasks', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Level 0\n\t- [ ] Level 1\n\t\t- [ ] Level 2\n\t\t\t- [ ] Level 3\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Level 0');
+      expect(tasks[0].getChildren()[0].getName()).toEqual('Level 1');
+      expect(tasks[0].getChildren()[0].getChildren()[0].getName()).toEqual('Level 2');
+      expect(tasks[0].getChildren()[0].getChildren()[0].getChildren()[0].getName()).toEqual(
+        'Level 3'
+      );
+    });
+
+    it('parses multiple parent tasks with their own sub-tasks', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent 1\n\t- [ ] Child 1a\n- [ ] Parent 2\n\t- [ ] Child 2a\n\t- [ ] Child 2b\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(2);
+      expect(tasks[0].getName()).toEqual('Parent 1');
+      expect(tasks[0].getChildren().length).toEqual(1);
+      expect(tasks[1].getName()).toEqual('Parent 2');
+      expect(tasks[1].getChildren().length).toEqual(2);
+    });
+
+    it('outputs sub-tasks with correct indentation', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [ ] Child task 1\n\t- [x] Child task 2\n'
+      );
+
+      const result = sut.toString();
+
+      expect(result).toContain('- [ ] Parent task');
+      expect(result).toContain('\t- [ ] Child task 1');
+      expect(result).toContain('\t- [x] Child task 2');
+    });
+
+    it('parses sub-tasks with metadata', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task 📅 2024-01-01\n\t- [ ] Child task 📅 2024-01-02\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].getDueDate()).toEqual('2024-01-01');
+      expect(tasks[0].getChildren()[0].getDueDate()).toEqual('2024-01-02');
+    });
+
+    it('filters incomplete children correctly', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [x] Complete child\n\t- [ ] Incomplete child\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+      expect(parent.getChildren().length).toEqual(2);
+
+      parent.filterIncompleteChildren();
+
+      expect(parent.getChildren().length).toEqual(1);
+      expect(parent.getChildren()[0].getName()).toEqual('Incomplete child');
+    });
+
+    it('filters incomplete children recursively', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n\t- [ ] Child\n\t\t- [x] Complete grandchild\n\t\t- [ ] Incomplete grandchild\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+
+      parent.filterIncompleteChildren();
+
+      expect(parent.getChildren()[0].getChildren().length).toEqual(1);
+      expect(parent.getChildren()[0].getChildren()[0].getName()).toEqual('Incomplete grandchild');
+    });
+
+    it('marks children as carried over when parent is marked', () => {
+      settings.carryOverPrefix = '[>]';
+      sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Parent task\n\t- [ ] Child task\n');
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+      parent.markCarriedOver();
+
+      const result = parent.toString();
+      expect(result).toContain('- [ ] [>] Parent task');
+      expect(result).toContain('\t- [ ] [>] Child task');
+    });
+
+    it('resets indent levels when setIndentLevel is called', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n\t- [ ] Child\n\t\t- [ ] Grandchild\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+
+      // Reset to level 0 (simulating carry-over)
+      parent.setIndentLevel(0);
+
+      const result = parent.toString();
+      expect(result).toContain('- [ ] Parent');
+      expect(result).toContain('\t- [ ] Child');
+      expect(result).toContain('\t\t- [ ] Grandchild');
+    });
+
+    it('preserves space indentation pattern when outputting', () => {
+      // Use 2-space indentation (2 spaces = level 1, 4 spaces = level 2)
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n  - [ ] Child level 1\n    - [ ] Child level 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].hasChildren()).toBe(true);
+
+      const result = tasks[0].toString();
+      // Should preserve the 2-space pattern
+      expect(result).toContain('- [ ] Parent');
+      expect(result).toContain('  - [ ] Child level 1');
+      expect(result).toContain('    - [ ] Child level 2');
+    });
+
+    it('handles orphaned sub-tasks when parent indent is skipped', () => {
+      // Task at level 2 without a level 1 parent - should be added as top-level
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n\t\t- [ ] Orphaned child at level 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      // The orphaned task should be added as a top-level task since there's no level 1 parent
+      expect(tasks.length).toEqual(2);
+      expect(tasks[0].getName()).toEqual('Parent');
+      expect(tasks[1].getName()).toEqual('Orphaned child at level 2');
+    });
+
+    it('handles task with due date in toString when dueDate is set', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task with due 📅 2024-01-15\n');
+
+      const tasks = sut.getAllTasks();
+      const task = tasks[0];
+
+      // Call isDue to set the dueDate property
+      task.isDue();
+
+      const result = task.toString();
+      expect(result).toContain('📅 2024-01-15');
+    });
+  });
 });

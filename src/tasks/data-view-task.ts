@@ -1,6 +1,5 @@
 import { moment } from 'obsidian';
-import AutoTasks from '..';
-import { Task } from './task';
+import { DUE_DATE_FORMAT, Task } from './task';
 
 const METADATA_SETS: string[] = [
   'due',
@@ -15,11 +14,9 @@ const METADATA_SETS: string[] = [
   'id',
   'dependsOn',
 ];
-const TASK_COMPLETE: RegExp = /^-\s\[x\]/;
+const TASK_COMPLETE: RegExp = /^\s*-\s\[x\]/;
 const TASK_DUE_DATE: RegExp = /\s\[due::\s(\d{4}-\d{2}-\d{2})\]/;
-const TASK_NAME: RegExp = /^(-\s\[[x\s]\]\s)(.*?)(?:\s\[[A-Za-z]+::|$)/;
-
-export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
+const TASK_NAME: RegExp = /^\s*(-\s\[[x\s]\]\s)(.*?)(?:\s\[[A-Za-z]+::|$)/;
 
 export class DataViewTask extends Task {
   getCompletedDate(): string | undefined {
@@ -61,21 +58,17 @@ export class DataViewTask extends Task {
     const matched = this.line.match(TASK_NAME);
     if (matched) {
       this.name = matched[2];
-      this.metadata = this.line.replace(matched[1] + matched[2], '');
+      // Remove indentation and task prefix from metadata calculation
+      const lineWithoutIndent = this.line.replace(/^\s*/, '');
+      this.metadata = lineWithoutIndent.replace(matched[1] + matched[2], '');
     }
 
     this.complete = !!this.line.match(TASK_COMPLETE);
-
-    const carriedOverPrefix = AutoTasks.getSettings().carryOverPrefix;
-    if (carriedOverPrefix && this.name.startsWith(carriedOverPrefix)) {
-      this.carriedOver = true;
-      this.name = this.name.replace(carriedOverPrefix + ' ', '');
-    }
+    this.parseCarriedOver();
   }
 
   toString(): string {
-    const carriedOver = this.carriedOver ? AutoTasks.getSettings().carryOverPrefix + ' ' : '';
-    const complete = this.complete ? 'x' : ' ';
+    const indent = this.buildIndent(this.indentLevel);
     let metadata = this.metadata;
     if (this.dueDate) {
       metadata = metadata.replace(
@@ -84,6 +77,6 @@ export class DataViewTask extends Task {
       );
     }
 
-    return `- [${complete}] ${carriedOver}${this.name}${metadata}`;
+    return `${indent}- [${this.getCompleteChar()}] ${this.getCarriedOverPrefix()}${this.name}${metadata}${this.buildChildrenString()}`;
   }
 }

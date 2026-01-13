@@ -2,7 +2,7 @@ import { DONE, DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { Task } from './task';
 
 const HEADER_LINE: RegExp = /^#{1,6}/;
-const TASK_LINE: RegExp = /^-\s\[[x\s]\]/;
+const TASK_LINE: RegExp = /^\s*-\s\[[x\s]\]/;
 
 export abstract class TaskCollection {
   private tasks: Map<string, Task[]>;
@@ -12,15 +12,46 @@ export abstract class TaskCollection {
     this.tasks = new Map<string, Task[]>();
 
     let currentHeader = '';
+    // Stack to track parent tasks at each indent level
+    // Index 0 = root level (tasks added directly to map), Index 1+ = nested tasks
+    const parentStack: Task[] = [];
+
     for (const line of lines) {
       if (line.match(HEADER_LINE)) {
         currentHeader = line;
         this.tasks.set(currentHeader, []);
+        // Reset parent stack when entering new header section
+        parentStack.length = 0;
       }
       if (line.match(TASK_LINE)) {
-        const existingTasks = this.tasks.get(currentHeader) || [];
-        existingTasks.push(this.parseTask(line));
-        this.tasks.set(currentHeader, existingTasks);
+        const task = this.parseTask(line);
+        const indentLevel = task.getIndentLevel();
+
+        if (indentLevel === 0) {
+          // Top-level task: add to map and set as potential parent
+          const existingTasks = this.tasks.get(currentHeader) || [];
+          existingTasks.push(task);
+          this.tasks.set(currentHeader, existingTasks);
+          // Reset stack and set this as the level 0 parent
+          parentStack.length = 0;
+          parentStack[0] = task;
+        } else {
+          // Nested task: find the appropriate parent
+          // Parent is at indentLevel - 1 in the stack
+          const parentIndex = indentLevel - 1;
+          if (parentIndex >= 0 && parentStack[parentIndex]) {
+            parentStack[parentIndex].addChild(task);
+          } else {
+            // Fallback: if no valid parent, add as top-level task
+            const existingTasks = this.tasks.get(currentHeader) || [];
+            existingTasks.push(task);
+            this.tasks.set(currentHeader, existingTasks);
+          }
+          // Set this task as the parent for its level (for deeper nesting)
+          parentStack[indentLevel] = task;
+          // Clear any deeper levels that are no longer valid
+          parentStack.length = indentLevel + 1;
+        }
       }
     }
 
