@@ -376,5 +376,48 @@ describe('Emoji task collection', () => {
       expect(result).toContain('\t- [ ] Child');
       expect(result).toContain('\t\t- [ ] Grandchild');
     });
+
+    it('preserves space indentation pattern when outputting', () => {
+      // Use 2-space indentation (2 spaces = level 1, 4 spaces = level 2)
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n  - [ ] Child level 1\n    - [ ] Child level 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].hasChildren()).toBe(true);
+
+      const result = tasks[0].toString();
+      // Should preserve the 2-space pattern
+      expect(result).toContain('- [ ] Parent');
+      expect(result).toContain('  - [ ] Child level 1');
+      expect(result).toContain('    - [ ] Child level 2');
+    });
+
+    it('handles orphaned sub-tasks when parent indent is skipped', () => {
+      // Task at level 2 without a level 1 parent - should be added as top-level
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n\t\t- [ ] Orphaned child at level 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      // The orphaned task should be added as a top-level task since there's no level 1 parent
+      expect(tasks.length).toEqual(2);
+      expect(tasks[0].getName()).toEqual('Parent');
+      expect(tasks[1].getName()).toEqual('Orphaned child at level 2');
+    });
+
+    it('handles task with due date in toString when dueDate is set', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Task with due 📅 2024-01-15\n');
+
+      const tasks = sut.getAllTasks();
+      const task = tasks[0];
+
+      // Call isDue to set the dueDate property
+      task.isDue();
+
+      const result = task.toString();
+      expect(result).toContain('📅 2024-01-15');
+    });
   });
 });
