@@ -244,4 +244,83 @@ describe('DataView task collection', () => {
       '## Header 1\n\n- [ ] Task 1\n- [ ] Task 2\n\n## Header 2\n\n- [ ] Task 3\n- [ ] Task 4 [due:: 2025-01-01]\n- [ ] [>] Task 5\n\n'
     );
   });
+
+  describe('sub-tasks', () => {
+    it('parses sub-tasks with tab indentation', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [ ] Child task 1\n\t- [ ] Child task 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Parent task');
+      expect(tasks[0].hasChildren()).toBe(true);
+      expect(tasks[0].getChildren().length).toEqual(2);
+      expect(tasks[0].getChildren()[0].getName()).toEqual('Child task 1');
+      expect(tasks[0].getChildren()[1].getName()).toEqual('Child task 2');
+    });
+
+    it('parses sub-tasks with space indentation', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n  - [ ] Child task 1\n  - [ ] Child task 2\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].hasChildren()).toBe(true);
+      expect(tasks[0].getChildren().length).toEqual(2);
+    });
+
+    it('parses deeply nested sub-tasks', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Level 0\n\t- [ ] Level 1\n\t\t- [ ] Level 2\n\t\t\t- [ ] Level 3\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Level 0');
+      expect(tasks[0].getChildren()[0].getName()).toEqual('Level 1');
+      expect(tasks[0].getChildren()[0].getChildren()[0].getName()).toEqual('Level 2');
+      expect(tasks[0].getChildren()[0].getChildren()[0].getChildren()[0].getName()).toEqual(
+        'Level 3'
+      );
+    });
+
+    it('parses sub-tasks with metadata', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Parent task [due:: 2024-01-01]\n\t- [ ] Child task [due:: 2024-01-02]\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].getDueDate()).toEqual('2024-01-01');
+      expect(tasks[0].getChildren()[0].getDueDate()).toEqual('2024-01-02');
+    });
+
+    it('filters incomplete children correctly', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [x] Complete child\n\t- [ ] Incomplete child\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+      expect(parent.getChildren().length).toEqual(2);
+
+      parent.filterIncompleteChildren();
+
+      expect(parent.getChildren().length).toEqual(1);
+      expect(parent.getChildren()[0].getName()).toEqual('Incomplete child');
+    });
+
+    it('outputs sub-tasks with correct indentation', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [ ] Child task 1\n\t- [x] Child task 2\n'
+      );
+
+      const result = sut.toString();
+
+      expect(result).toContain('- [ ] Parent task');
+      expect(result).toContain('\t- [ ] Child task 1');
+      expect(result).toContain('\t- [x] Child task 2');
+    });
+  });
 });

@@ -45,7 +45,13 @@ export class TasksProvider {
       const tasks: Task[] = this.factory
         .newCollection(previousEntryContents)
         .getTasksFromLists(periodicitySetting.searchHeaders);
+      // Filter out complete parent tasks, then recursively filter complete children
       let tasksToAdd: Task[] = tasks.filter((task) => !task.isComplete());
+      for (const task of tasksToAdd) {
+        task.filterIncompleteChildren();
+        // Reset indent levels to start from 0 for carried over tasks
+        task.setIndentLevel(0);
+      }
 
       // Find any tasks that are due elsewhere in other files, pull these from the central board
       if (settings.tasksAvailable && settings.kanbanSync && periodicitySetting.addDue) {

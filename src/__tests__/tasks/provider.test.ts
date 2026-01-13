@@ -259,4 +259,154 @@ describe('tasks provider', () => {
       `Some existing contents...\n\n## Daily TODOs\n\n- [ ] Due and existing task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n- [ ] Due task 📅 ${moment().subtract(1, 'day').format(DUE_DATE_FORMAT)}\n\n## Some other content\n\nAnd something else...`
     );
   });
+
+  describe('sub-tasks carry-over', () => {
+    it('carries over incomplete parent with incomplete sub-tasks', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Parent task\n\t- [ ] Child task 1\n\t- [ ] Child task 2'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Parent task');
+      expect(result).toContain('\t- [ ] Child task 1');
+      expect(result).toContain('\t- [ ] Child task 2');
+    });
+
+    it('does not carry over complete parent even with incomplete sub-tasks', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce('## TODOs\n\n- [x] Complete parent\n\t- [ ] Incomplete child');
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).not.toContain('Complete parent');
+      expect(result).not.toContain('Incomplete child');
+    });
+
+    it('filters out complete sub-tasks when carrying over incomplete parent', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Parent task\n\t- [x] Complete child\n\t- [ ] Incomplete child'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Parent task');
+      expect(result).not.toContain('Complete child');
+      expect(result).toContain('\t- [ ] Incomplete child');
+    });
+
+    it('carries over deeply nested incomplete tasks', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Level 0\n\t- [ ] Level 1\n\t\t- [ ] Level 2\n\t\t\t- [ ] Level 3'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Level 0');
+      expect(result).toContain('\t- [ ] Level 1');
+      expect(result).toContain('\t\t- [ ] Level 2');
+      expect(result).toContain('\t\t\t- [ ] Level 3');
+    });
+
+    it('filters complete tasks at all nesting levels', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Parent\n\t- [ ] Child 1\n\t\t- [x] Complete grandchild\n\t\t- [ ] Incomplete grandchild\n\t- [x] Complete child 2'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Parent');
+      expect(result).toContain('\t- [ ] Child 1');
+      expect(result).not.toContain('Complete grandchild');
+      expect(result).toContain('\t\t- [ ] Incomplete grandchild');
+      expect(result).not.toContain('Complete child 2');
+    });
+
+    it('adds carry-over prefix to parent and children', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.carryOverPrefix = '[>]';
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce('## TODOs\n\n- [ ] Parent task\n\t- [ ] Child task');
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] [>] Parent task');
+      expect(result).toContain('\t- [ ] [>] Child task');
+    });
+  });
 });
