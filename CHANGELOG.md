@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-01-13
+
+### Added
+
+- feat: support sub-tasks at multiple levels (38e78ef)
+- (e902cbc)
+
+### Other
+
+- chore: add more tests for task changes (8144bc2)
+
 ## [0.5.0] - 2026-01-06
 
 ### Added
@@ -19,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (3ef75c7)
 - chore: ensure build also releases styles file (7d3fb43)
 - chore: fix release notes in build step (6a2e55c)
+- [skip ci] Update version to v0.5.0 (5c008ef)
 
 ## [0.4.1] - 2025-08-21
 
