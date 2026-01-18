@@ -37,8 +37,11 @@ export abstract class TaskCollection {
           parentStack[0] = task;
         } else {
           // Nested task: find the appropriate parent
-          // Parent is at indentLevel - 1 in the stack
-          const parentIndex = indentLevel - 1;
+          // Search backwards from indentLevel - 1 to find the nearest parent
+          let parentIndex = indentLevel - 1;
+          while (parentIndex >= 0 && !parentStack[parentIndex]) {
+            parentIndex--;
+          }
           if (parentIndex >= 0 && parentStack[parentIndex]) {
             parentStack[parentIndex].addChild(task);
           } else {

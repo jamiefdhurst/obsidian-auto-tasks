@@ -394,17 +394,54 @@ describe('Emoji task collection', () => {
       expect(result).toContain('    - [ ] Child level 2');
     });
 
-    it('handles orphaned sub-tasks when parent indent is skipped', () => {
-      // Task at level 2 without a level 1 parent - should be added as top-level
+    it('parses sub-tasks with 4-space indentation (issue #63)', () => {
+      // 4-space indentation calculates as level 2, but should still find level 0 parent
       sut = new EmojiTaskCollection(
-        '## Header 1\n\n- [ ] Parent\n\t\t- [ ] Orphaned child at level 2\n'
+        '## Header 1\n\n- [ ] Perl Training setup\n    - [x] Initial build ✅ 2026-01-15\n    - [ ] Add in extra features\n    - [ ] Decide upon the activities\n'
       );
 
       const tasks = sut.getAllTasks();
-      // The orphaned task should be added as a top-level task since there's no level 1 parent
-      expect(tasks.length).toEqual(2);
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Perl Training setup');
+      expect(tasks[0].hasChildren()).toBe(true);
+      expect(tasks[0].getChildren().length).toEqual(3);
+      expect(tasks[0].getChildren()[0].getName()).toEqual('Initial build');
+      expect(tasks[0].getChildren()[1].getName()).toEqual('Add in extra features');
+      expect(tasks[0].getChildren()[2].getName()).toEqual('Decide upon the activities');
+    });
+
+    it('preserves 4-space indentation pattern when outputting', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n    - [ ] Child with 4-space indent\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].hasChildren()).toBe(true);
+
+      const result = tasks[0].toString();
+      expect(result).toContain('- [ ] Parent');
+      expect(result).toContain('    - [ ] Child with 4-space indent');
+    });
+
+    it('finds nearest parent when indent levels are skipped', () => {
+      // Task at level 2 without a level 1 parent - should find level 0 parent
+      sut = new EmojiTaskCollection('## Header 1\n\n- [ ] Parent\n\t\t- [ ] Child at level 2\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
       expect(tasks[0].getName()).toEqual('Parent');
-      expect(tasks[1].getName()).toEqual('Orphaned child at level 2');
+      expect(tasks[0].hasChildren()).toBe(true);
+      expect(tasks[0].getChildren()[0].getName()).toEqual('Child at level 2');
+    });
+
+    it('handles truly orphaned sub-tasks with no parent available', () => {
+      // Indented task at start of section with no parent - should be added as top-level
+      sut = new EmojiTaskCollection('## Header 1\n\n\t- [ ] Orphaned task with no parent\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Orphaned task with no parent');
     });
 
     it('handles task with due date in toString when dueDate is set', () => {
