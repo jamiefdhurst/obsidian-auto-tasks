@@ -42,12 +42,12 @@ export abstract class Task {
     const match = this.line.match(/^(\s*)/);
     if (match && match[1]) {
       this.indent = match[1];
-      // Calculate indent level: count tabs as 1, or every 2-4 spaces as 1
+      // Calculate indent level: count tabs as 1, or spaces as levels
       if (this.indent.includes('\t')) {
         this.indentLevel = (this.indent.match(/\t/g) || []).length;
       } else {
-        // Assume 2-space or 4-space indentation, use 2 as minimum
-        this.indentLevel = Math.floor(this.indent.length / 2);
+        // Any non-zero indentation is at least level 1, then add levels for every 2 spaces
+        this.indentLevel = Math.max(1, Math.floor(this.indent.length / 2));
       }
     }
   }
