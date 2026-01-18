@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-01-18
+
+### Fixed
+
+- fix: sub-tasks now working for correctly spaced levels (3ecfdf4)
+- (d78a4ba)
+
+### Other
+
+- chore: update dependabot labels (b463bf6)
+- chore(deps-dev): bump @types/node from 25.0.3 to 25.0.8 (70bb90b)
+- (4750a3f)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (287dac4)
+- (332a31f)
+
 ## [0.6.0] - 2026-01-13
 
 ### Added
@@ -15,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Other
 
 - chore: add more tests for task changes (8144bc2)
+- [skip ci] Update version to v0.6.0 (51ecece)
 
 ## [0.5.0] - 2026-01-06
 
