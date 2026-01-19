@@ -278,4 +278,38 @@ describe('kanban synchroniser', () => {
     expect(board.toString()).toContain(`${DONE}\n\n${COMPLETE}\n\n\n\n\n\n${ARCHIVE_DIVIDER}`);
     expect(board.toString()).toContain(`${ARCHIVE}\n\n- [x] Complete task ✅ ${dueDate}\n`);
   });
+
+  it('ignores not-needed tasks', async () => {
+    const file1 = new TFile();
+    file1.name = 'file1.md';
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValue(
+        '## TODOs\n\n- [ ] A new task\n- [n] Not needed task\n- [ ] Another new task\n'
+      );
+
+    await sut.process(board, [file1]);
+
+    expect(board.getTaskCollection().getAllTasks().length).toEqual(2);
+    expect(board.toString()).toContain('- [ ] A new task');
+    expect(board.toString()).toContain('- [ ] Another new task');
+    expect(board.toString()).not.toContain('- [n] Not needed task');
+  });
+
+  it('ignores not-needed tasks with metadata', async () => {
+    const file1 = new TFile();
+    file1.name = 'file1.md';
+    const dueDate = moment().format(DUE_DATE_FORMAT);
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValue(`## TODOs\n\n- [ ] A new task\n- [n] Not needed task 📅 ${dueDate}\n`);
+
+    await sut.process(board, [file1]);
+
+    expect(board.getTaskCollection().getAllTasks().length).toEqual(1);
+    expect(board.toString()).toContain('- [ ] A new task');
+    expect(board.toString()).not.toContain('Not needed task');
+  });
 });

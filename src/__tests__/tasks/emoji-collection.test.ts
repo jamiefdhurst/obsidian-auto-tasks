@@ -457,4 +457,71 @@ describe('Emoji task collection', () => {
       expect(result).toContain('📅 2024-01-15');
     });
   });
+
+  describe('not-needed tasks', () => {
+    it('parses not-needed tasks with [n] marker', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Normal task\n- [n] Not needed task\n- [x] Complete task\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(3);
+      expect(tasks[0].isNotNeeded()).toBe(false);
+      expect(tasks[1].isNotNeeded()).toBe(true);
+      expect(tasks[2].isNotNeeded()).toBe(false);
+    });
+
+    it('outputs not-needed tasks with [n] marker', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [n] Not needed task\n');
+
+      const result = sut.toString();
+      expect(result).toContain('- [n] Not needed task');
+    });
+
+    it('parses not-needed task with metadata', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [n] Not needed task 📅 2024-01-01\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].isNotNeeded()).toBe(true);
+      expect(tasks[0].getName()).toEqual('Not needed task');
+      expect(tasks[0].getDueDate()).toEqual('2024-01-01');
+    });
+
+    it('filters not-needed children correctly', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [n] Not needed child\n\t- [ ] Normal child\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+      expect(parent.getChildren().length).toEqual(2);
+
+      parent.filterNotNeededChildren();
+
+      expect(parent.getChildren().length).toEqual(1);
+      expect(parent.getChildren()[0].getName()).toEqual('Normal child');
+    });
+
+    it('filters not-needed children recursively', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent\n\t- [ ] Child\n\t\t- [n] Not needed grandchild\n\t\t- [ ] Normal grandchild\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      const parent = tasks[0];
+
+      parent.filterNotNeededChildren();
+
+      expect(parent.getChildren()[0].getChildren().length).toEqual(1);
+      expect(parent.getChildren()[0].getChildren()[0].getName()).toEqual('Normal grandchild');
+    });
+
+    it('not-needed task is not complete', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [n] Not needed task\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].isNotNeeded()).toBe(true);
+      expect(tasks[0].isComplete()).toBe(false);
+    });
+  });
 });
