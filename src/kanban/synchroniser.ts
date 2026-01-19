@@ -57,6 +57,11 @@ export class KanbanSynchroniser {
       .getAllTasks();
 
     for (const task of fileTasks) {
+      // Skip not-needed tasks
+      if (task.isNotNeeded()) {
+        continue;
+      }
+
       // Ignore matched tasks
       if (
         this.plugin

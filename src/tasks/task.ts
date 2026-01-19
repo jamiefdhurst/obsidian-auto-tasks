@@ -10,6 +10,7 @@ export abstract class Task {
   protected children: Task[] = [];
   protected complete?: boolean;
   protected dueDate?: Moment;
+  protected notNeeded?: boolean;
   protected indent: string = '';
   protected indentLevel: number = 0;
   protected line: string;
@@ -75,6 +76,9 @@ export abstract class Task {
   }
 
   protected getCompleteChar(): string {
+    if (this.notNeeded) {
+      return 'n';
+    }
     return this.complete ? 'x' : ' ';
   }
 
@@ -109,6 +113,10 @@ export abstract class Task {
     return !!this.complete;
   }
 
+  isNotNeeded(): boolean {
+    return !!this.notNeeded;
+  }
+
   abstract isDue(): boolean;
 
   markCarriedOver(): Task {
@@ -133,6 +141,14 @@ export abstract class Task {
     // Recursively filter grandchildren
     for (const child of this.children) {
       child.filterIncompleteChildren();
+    }
+  }
+
+  filterNotNeededChildren(): void {
+    this.children = this.children.filter((child) => !child.isNotNeeded());
+    // Recursively filter grandchildren
+    for (const child of this.children) {
+      child.filterNotNeededChildren();
     }
   }
 

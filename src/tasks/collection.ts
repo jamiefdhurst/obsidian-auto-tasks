@@ -2,7 +2,7 @@ import { DONE, DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { Task } from './task';
 
 const HEADER_LINE: RegExp = /^#{1,6}/;
-const TASK_LINE: RegExp = /^\s*-\s\[[x\s]\]/;
+const TASK_LINE: RegExp = /^\s*-\s\[[xn\s]\]/;
 
 export abstract class TaskCollection {
   private tasks: Map<string, Task[]>;

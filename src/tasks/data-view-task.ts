@@ -15,8 +15,9 @@ const METADATA_SETS: string[] = [
   'dependsOn',
 ];
 const TASK_COMPLETE: RegExp = /^\s*-\s\[x\]/;
+const TASK_NOT_NEEDED: RegExp = /^\s*-\s\[n\]/;
 const TASK_DUE_DATE: RegExp = /\s\[due::\s(\d{4}-\d{2}-\d{2})\]/;
-const TASK_NAME: RegExp = /^\s*(-\s\[[x\s]\]\s)(.*?)(?:\s\[[A-Za-z]+::|$)/;
+const TASK_NAME: RegExp = /^\s*(-\s\[[xn\s]\]\s)(.*?)(?:\s\[[A-Za-z]+::|$)/;
 
 export class DataViewTask extends Task {
   getCompletedDate(): string | undefined {
@@ -64,6 +65,7 @@ export class DataViewTask extends Task {
     }
 
     this.complete = !!this.line.match(TASK_COMPLETE);
+    this.notNeeded = !!this.line.match(TASK_NOT_NEEDED);
     this.parseCarriedOver();
   }
 

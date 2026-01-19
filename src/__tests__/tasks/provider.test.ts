@@ -409,4 +409,105 @@ describe('tasks provider', () => {
       expect(result).toContain('\t- [ ] [>] Child task');
     });
   });
+
+  describe('not-needed tasks carry-over', () => {
+    it('does not carry over not-needed tasks', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Incomplete 1\n- [n] Not needed task\n- [ ] Incomplete 2'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Incomplete 1');
+      expect(result).toContain('- [ ] Incomplete 2');
+      expect(result).not.toContain('Not needed task');
+    });
+
+    it('does not carry over not-needed parent even with incomplete sub-tasks', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce('## TODOs\n\n- [n] Not needed parent\n\t- [ ] Incomplete child');
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).not.toContain('Not needed parent');
+      expect(result).not.toContain('Incomplete child');
+    });
+
+    it('filters out not-needed sub-tasks when carrying over incomplete parent', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Parent task\n\t- [n] Not needed child\n\t- [ ] Incomplete child'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Parent task');
+      expect(result).not.toContain('Not needed child');
+      expect(result).toContain('\t- [ ] Incomplete child');
+    });
+
+    it('filters not-needed tasks at all nesting levels', async () => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest
+        .spyOn(vault, 'read')
+        .mockResolvedValueOnce(
+          '## TODOs\n\n- [ ] Parent\n\t- [ ] Child 1\n\t\t- [n] Not needed grandchild\n\t\t- [ ] Incomplete grandchild\n\t- [n] Not needed child 2'
+        );
+      const currentFile = new TFile();
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(result).toContain('- [ ] Parent');
+      expect(result).toContain('\t- [ ] Child 1');
+      expect(result).not.toContain('Not needed grandchild');
+      expect(result).toContain('\t\t- [ ] Incomplete grandchild');
+      expect(result).not.toContain('Not needed child 2');
+    });
+  });
 });
