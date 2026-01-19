@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-01-19
+
+### Added
+
+- feat: add status for not-needed (3b7b9aa)
+- (e2e0b8f)
+
+### Other
+
+- chore: add codeowners (2af60ce)
+- chore(deps-dev): bump prettier in the dev-tools group (3179217)
+- (cb66195)
+- chore(deps-dev): bump @types/node from 25.0.8 to 25.0.9 (760ebee)
+- (9c1e013)
+
 ## [0.6.1] - 2026-01-18
 
 ### Fixed
@@ -19,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (4750a3f)
 - chore(deps-dev): bump the typescript-eslint group with 2 updates (287dac4)
 - (332a31f)
+- [skip ci] Update version to v0.6.1 (a1b8044)
 
 ## [0.6.0] - 2026-01-13
 
