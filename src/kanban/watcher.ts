@@ -1,12 +1,15 @@
 import { TFile } from 'obsidian';
+import debug from '../log';
 import { KanbanProvider } from './provider';
 
 const DEFAULT_TIMEOUT = 5000;
+const BOARD_WATCHER_KEY = '__kanban_board__';
 
 export class Watcher {
   private kanban: KanbanProvider;
   private timeouts: Map<string, number> = new Map();
   private timeoutValue: number;
+  private forwardSyncInProgress: boolean = false;
 
   constructor(kanban: KanbanProvider, timeoutValue?: number) {
     this.kanban = kanban;
@@ -37,7 +40,35 @@ export class Watcher {
     }
   }
 
+  notifyBoardModify(): void {
+    if (this.forwardSyncInProgress) {
+      debug('Skipping reverse sync - forward sync in progress');
+      return;
+    }
+
+    if (this.timeouts.has(BOARD_WATCHER_KEY)) {
+      window.clearTimeout(this.timeouts.get(BOARD_WATCHER_KEY));
+    }
+    this.timeouts.set(
+      BOARD_WATCHER_KEY,
+      window.setTimeout(this.runReverseSync.bind(this), this.timeoutValue)
+    );
+  }
+
+  setForwardSyncInProgress(inProgress: boolean): void {
+    this.forwardSyncInProgress = inProgress;
+  }
+
+  isForwardSyncInProgress(): boolean {
+    return this.forwardSyncInProgress;
+  }
+
   run(file: TFile) {
     this.kanban.synchroniseTasks([file]);
+  }
+
+  private runReverseSync(): void {
+    debug('Running reverse sync from board change');
+    this.kanban.reverseSynchroniseTasks();
   }
 }

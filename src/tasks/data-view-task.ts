@@ -18,6 +18,7 @@ const TASK_COMPLETE: RegExp = /^\s*-\s\[x\]/;
 const TASK_NOT_NEEDED: RegExp = /^\s*-\s\[n\]/;
 const TASK_DUE_DATE: RegExp = /\s\[due::\s(\d{4}-\d{2}-\d{2})\]/;
 const TASK_NAME: RegExp = /^\s*(-\s\[[xn\s]\]\s)(.*?)(?:\s\[[A-Za-z]+::|$)/;
+const TASK_ORIGINS: RegExp = /%%origin:(.*?)%%/g;
 
 export class DataViewTask extends Task {
   getCompletedDate(): string | undefined {
@@ -67,6 +68,16 @@ export class DataViewTask extends Task {
     this.complete = !!this.line.match(TASK_COMPLETE);
     this.notNeeded = !!this.line.match(TASK_NOT_NEEDED);
     this.parseCarriedOver();
+    this.parseOrigins();
+  }
+
+  protected parseOrigins(): void {
+    const matches = this.line.matchAll(TASK_ORIGINS);
+    for (const match of matches) {
+      this.addOrigin(match[1]);
+    }
+    // Remove origin metadata from the metadata string (it's stored separately)
+    this.metadata = this.metadata.replace(TASK_ORIGINS, '').replace(/\s+$/, '');
   }
 
   toString(): string {
@@ -79,6 +90,14 @@ export class DataViewTask extends Task {
       );
     }
 
-    return `${indent}- [${this.getCompleteChar()}] ${this.getCarriedOverPrefix()}${this.name}${metadata}${this.buildChildrenString()}`;
+    const originsStr = this.buildOriginsString();
+    return `${indent}- [${this.getCompleteChar()}] ${this.getCarriedOverPrefix()}${this.name}${metadata}${originsStr}${this.buildChildrenString()}`;
+  }
+
+  protected buildOriginsString(): string {
+    if (this.origins.length === 0) {
+      return '';
+    }
+    return ' ' + this.origins.map((o) => `%%origin:${o}%%`).join(' ');
   }
 }

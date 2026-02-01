@@ -5,16 +5,24 @@ import { TaskFactory } from '../tasks/factory';
 import { Task } from '../tasks/task';
 import { ObsidianVault } from '../types';
 import { ARCHIVE, DONE, DUE, KanbanBoard, UPCOMING } from './board';
+import { TaskOriginIndex } from './origin-index';
 
 export class KanbanSynchroniser {
   private plugin: AutoTasks;
   private vault: ObsidianVault;
   private taskFactory: TaskFactory;
+  private originIndex?: TaskOriginIndex;
 
-  constructor(plugin: AutoTasks, vault: ObsidianVault, taskFactory: TaskFactory) {
+  constructor(
+    plugin: AutoTasks,
+    vault: ObsidianVault,
+    taskFactory: TaskFactory,
+    originIndex?: TaskOriginIndex
+  ) {
     this.plugin = plugin;
     this.vault = vault;
     this.taskFactory = taskFactory;
+    this.originIndex = originIndex;
   }
 
   async process(board: KanbanBoard, files?: TFile[]): Promise<void> {
@@ -71,10 +79,21 @@ export class KanbanSynchroniser {
         continue;
       }
 
+      if (file.path) {
+        if (this.originIndex) {
+          this.originIndex.addOrigin(task.getName(), file.path);
+        }
+        task.addOrigin(file.path);
+      }
+
       const existingTask = kanbanTasks.getTask(task);
       if (!existingTask) {
         kanbanTasks.add(task);
       } else {
+        for (const origin of existingTask.getOrigins()) {
+          task.addOrigin(origin);
+        }
+
         if (!task.isComplete() && kanbanTasks.getList(task) === DONE) {
           kanbanTasks.move(task, task.isDue() ? DUE : UPCOMING);
         } else if (task.isDue() && !task.isComplete()) {

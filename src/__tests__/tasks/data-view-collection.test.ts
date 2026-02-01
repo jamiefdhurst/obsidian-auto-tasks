@@ -440,4 +440,107 @@ describe('DataView task collection', () => {
       expect(tasks[0].isComplete()).toBe(false);
     });
   });
+
+  describe('origin tracking', () => {
+    it('parses origin metadata from task', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1 %%origin:file1.md%%\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].getOrigins()).toContain('file1.md');
+    });
+
+    it('parses multiple origins from task', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Task 1 %%origin:file1.md%% %%origin:file2.md%%\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].getOrigins()).toContain('file1.md');
+      expect(tasks[0].getOrigins()).toContain('file2.md');
+      expect(tasks[0].getOrigins()).toHaveLength(2);
+    });
+
+    it('outputs origin metadata in toString', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
+
+      const tasks = sut.getAllTasks();
+      tasks[0].addOrigin('file1.md');
+
+      const result = sut.toString();
+      expect(result).toContain('%%origin:file1.md%%');
+    });
+
+    it('outputs multiple origins in toString', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
+
+      const tasks = sut.getAllTasks();
+      tasks[0].addOrigin('file1.md');
+      tasks[0].addOrigin('file2.md');
+
+      const result = sut.toString();
+      expect(result).toContain('%%origin:file1.md%%');
+      expect(result).toContain('%%origin:file2.md%%');
+    });
+
+    it('preserves other metadata when adding origins', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Task 1 [due:: 2024-01-01] [priority:: high]\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      tasks[0].addOrigin('file1.md');
+
+      const result = sut.toString();
+      expect(result).toContain('[due:: 2024-01-01]');
+      expect(result).toContain('[priority:: high]');
+      expect(result).toContain('%%origin:file1.md%%');
+    });
+
+    it('removes origin from metadata string after parsing', () => {
+      sut = new DataViewTaskCollection(
+        '## Header 1\n\n- [ ] Task 1 [due:: 2024-01-01] %%origin:file1.md%%\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].getDueDate()).toEqual('2024-01-01');
+      expect(tasks[0].getName()).toEqual('Task 1');
+    });
+
+    it('addOrigin does not add duplicates', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
+
+      const tasks = sut.getAllTasks();
+      tasks[0].addOrigin('file1.md');
+      tasks[0].addOrigin('file1.md');
+
+      expect(tasks[0].getOrigins()).toHaveLength(1);
+    });
+
+    it('setOrigins replaces all origins', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1 %%origin:old.md%%\n');
+
+      const tasks = sut.getAllTasks();
+      tasks[0].setOrigins(['new1.md', 'new2.md']);
+
+      expect(tasks[0].getOrigins()).toContain('new1.md');
+      expect(tasks[0].getOrigins()).toContain('new2.md');
+      expect(tasks[0].getOrigins()).not.toContain('old.md');
+      expect(tasks[0].getOrigins()).toHaveLength(2);
+    });
+
+    it('hasOrigin returns true for existing origin', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1 %%origin:file1.md%%\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].hasOrigin('file1.md')).toBe(true);
+      expect(tasks[0].hasOrigin('nonexistent.md')).toBe(false);
+    });
+
+    it('outputs no origin string when no origins', () => {
+      sut = new DataViewTaskCollection('## Header 1\n\n- [ ] Task 1\n');
+
+      const result = sut.toString();
+      expect(result).not.toContain('%%origin:');
+    });
+  });
 });

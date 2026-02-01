@@ -81,6 +81,10 @@ export default class AutoTasks extends Plugin {
       })
     );
 
+    // Initialize the kanban provider and perform migration if needed
+    await this.kanban.initialize();
+    await this.kanban.migrateOrigins();
+
     // Sync all outstanding tasks now to the Kanban board
     this.kanban.synchroniseTasks();
     this.registerEvent(
@@ -92,8 +96,14 @@ export default class AutoTasks extends Plugin {
     );
     this.registerEvent(
       this.app.vault.on('modify', (file) => {
-        if (file instanceof TFile && file.name !== this.settings.kanbanFile) {
-          this.kanban.getWatcher().notifyModify(file);
+        if (file instanceof TFile) {
+          if (file.name === this.settings.kanbanFile) {
+            // Board file modified - trigger reverse sync
+            this.kanban.getWatcher().notifyBoardModify();
+          } else {
+            // Regular file modified - trigger forward sync
+            this.kanban.getWatcher().notifyModify(file);
+          }
         }
       })
     );
