@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-02-01
+
+### Added
+
+- feat: add kanban reverse sync support (21e18be)
+- (2f3cc1f)
+
+### Other
+
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (e6c3cc0)
+- (0c46ebb)
+- chore(deps-dev): bump prettier in the dev-tools group (1482807)
+- (4597e0b)
+- chore(deps-dev): bump @types/node from 25.0.9 to 25.0.10 (ed6b0cd)
+- (62d7e85)
+
 ## [0.7.0] - 2026-01-19
 
 ### Added
@@ -19,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (cb66195)
 - chore(deps-dev): bump @types/node from 25.0.8 to 25.0.9 (760ebee)
 - (9c1e013)
+- [skip ci] Update version to v0.7.0 (3b4cf7e)
 
 ## [0.6.1] - 2026-01-18
 
