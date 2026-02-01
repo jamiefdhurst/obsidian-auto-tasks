@@ -9,6 +9,7 @@ describe('kanban watcher', () => {
   beforeEach(() => {
     kanban = jest.fn() as unknown as KanbanProvider;
     kanban.synchroniseTasks = jest.fn();
+    kanban.reverseSynchroniseTasks = jest.fn();
 
     sut = new Watcher(kanban, 20);
   });
@@ -113,5 +114,65 @@ describe('kanban watcher', () => {
 
     await new Promise((r) => setTimeout(r, 20));
     expect(run).not.toHaveBeenCalled();
+  });
+
+  describe('board monitoring', () => {
+    it('notifies board modify triggers reverse sync', async () => {
+      const reverseSync = jest.spyOn(kanban, 'reverseSynchroniseTasks');
+
+      sut.notifyBoardModify();
+
+      expect(reverseSync).not.toHaveBeenCalled();
+
+      await new Promise((r) => setTimeout(r, 25));
+      expect(reverseSync).toHaveBeenCalledTimes(1);
+    });
+
+    it('debounces multiple board modify calls', async () => {
+      const reverseSync = jest.spyOn(kanban, 'reverseSynchroniseTasks');
+
+      sut.notifyBoardModify();
+      await new Promise((r) => setTimeout(r, 5));
+      sut.notifyBoardModify();
+
+      await new Promise((r) => setTimeout(r, 25));
+      expect(reverseSync).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips reverse sync when forward sync is in progress', async () => {
+      const reverseSync = jest.spyOn(kanban, 'reverseSynchroniseTasks');
+
+      sut.setForwardSyncInProgress(true);
+      sut.notifyBoardModify();
+
+      await new Promise((r) => setTimeout(r, 25));
+      expect(reverseSync).not.toHaveBeenCalled();
+    });
+
+    it('allows reverse sync after forward sync completes', async () => {
+      const reverseSync = jest.spyOn(kanban, 'reverseSynchroniseTasks');
+
+      sut.setForwardSyncInProgress(true);
+      sut.notifyBoardModify();
+
+      await new Promise((r) => setTimeout(r, 25));
+      expect(reverseSync).not.toHaveBeenCalled();
+
+      sut.setForwardSyncInProgress(false);
+      sut.notifyBoardModify();
+
+      await new Promise((r) => setTimeout(r, 25));
+      expect(reverseSync).toHaveBeenCalledTimes(1);
+    });
+
+    it('tracks forward sync in progress state', () => {
+      expect(sut.isForwardSyncInProgress()).toBe(false);
+
+      sut.setForwardSyncInProgress(true);
+      expect(sut.isForwardSyncInProgress()).toBe(true);
+
+      sut.setForwardSyncInProgress(false);
+      expect(sut.isForwardSyncInProgress()).toBe(false);
+    });
   });
 });

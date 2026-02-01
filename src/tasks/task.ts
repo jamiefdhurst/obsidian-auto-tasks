@@ -16,6 +16,7 @@ export abstract class Task {
   protected line: string;
   protected metadata: string = '';
   protected name: string = '';
+  protected origins: string[] = [];
 
   constructor(line: string) {
     this.line = line;
@@ -100,6 +101,24 @@ export abstract class Task {
 
   getName(): string {
     return this.name;
+  }
+
+  getOrigins(): string[] {
+    return this.origins;
+  }
+
+  addOrigin(origin: string): void {
+    if (!this.origins.includes(origin)) {
+      this.origins.push(origin);
+    }
+  }
+
+  setOrigins(origins: string[]): void {
+    this.origins = [...origins];
+  }
+
+  hasOrigin(origin: string): boolean {
+    return this.origins.includes(origin);
   }
 
   isArchivable(): boolean {
