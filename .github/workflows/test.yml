@@ -104,12 +104,12 @@ jobs:
         run: |
           npm run test-ci
       - name: Upload Test Results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: tests
           path: junit.xml
       - name: Upload Coverage
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/cobertura-coverage.xml
