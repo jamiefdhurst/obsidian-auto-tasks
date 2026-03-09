@@ -121,7 +121,7 @@ jobs:
           files: |
             junit.xml
       - name: Create Code Coverage Report
-        uses: im-open/code-coverage-report-generator@v5.0.0
+        uses: im-open/code-coverage-report-generator@v5.0.1
         with:
           reports: coverage/cobertura-coverage.xml
           reporttypes: MarkdownSummary
