@@ -81,7 +81,7 @@ jobs:
           .github/scripts/release-notes.sh ${{ steps.version.outputs.version }}
       - name: Create Release
         if: steps.version.outputs.should_release == 'true'
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1.21.0
         with:
           allowUpdates: true
           artifacts: 'main.js,manifest.json,styles.css'
