@@ -5,6 +5,85 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-07-23
+
+### Fixed
+
+- fix: extend jest-environment-obsidian workaround for Jest 30 compatibility (d3611d3)
+
+### Other
+
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (e7c4b4f)
+- (f8a347b)
+- chore(deps-dev): bump @types/node from 25.6.0 to 25.6.2 (e5b460c)
+- (4548ee8)
+- chore(deps-dev): bump builtin-modules from 5.1.0 to 5.2.0 (9221103)
+- (882b1d2)
+- chore(deps-dev): bump lint-staged (98abe66)
+- (e4d6229)
+- chore: bump obsidian-periodic-notes-provider from 0.1.1 to 1.0.1 (a6a8ada)
+- (d4506de)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (38a8c53)
+- (df6cdbe)
+- chore(deps-dev): bump @types/node from 25.6.2 to 25.9.0 (dc929cc)
+- (f0fa809)
+- chore(deps-dev): bump lint-staged (6a33ee6)
+- (f4992bc)
+- chore(deps-dev): bump @tootallnate/once from 2.0.0 to 2.0.1 (67389be)
+- (b8f6661)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (ea42f32)
+- (e473526)
+- chore(deps-dev): bump @types/node from 25.9.0 to 25.9.1 (f25a5c6)
+- (e43e9e4)
+- chore: bump obsidian-periodic-notes-provider from 1.0.1 to 2.0.0 (9444f0f)
+- (62adb7f)
+- chore(deps-dev): bump the jest group across 1 directory with 3 updates (2b75d64)
+- (d8dbe81)
+- chore(deps-dev): bump lint-staged in the dev-tools group (6e3ebc2)
+- (b474fb9)
+- chore(deps-dev): bump the typescript-eslint group across 1 directory with 2 updates (e3ead9f)
+- (2bddec3)
+- chore(deps-dev): bump @types/node from 25.9.1 to 25.9.2 (c1d0b43)
+- (5b898f5)
+- chore(deps-dev): bump esbuild from 0.28.0 to 0.28.1 (e4eee6d)
+- (bdc9222)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (4417395)
+- (e41812c)
+- chore(deps-dev): bump @types/node from 25.9.2 to 25.9.3 (3b2c7d6)
+- (d2a269e)
+- chore(deps-dev): bump prettier in the dev-tools group across 1 directory (8bb35e2)
+- (883a4ce)
+- chore(deps-dev): bump form-data from 4.0.5 to 4.0.6 (e4ad50b)
+- (05cd1bf)
+- chore: bump actions/checkout from 6 to 7 (f076685)
+- (8d7c0b4)
+- chore(deps-dev): bump builtin-modules from 5.2.0 to 5.3.0 (86b5b66)
+- (330301c)
+- chore(deps-dev): bump the typescript-eslint group across 1 directory with 2 updates (7a6f05d)
+- (0c75af9)
+- chore(deps-dev): bump @types/node from 25.9.3 to 26.0.1 (07f994e)
+- (700f2c3)
+- chore(deps-dev): bump the dev-tools group across 1 directory with 2 updates (7b18311)
+- (ffd9356)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (39f59d3)
+- (f63a2ad)
+- chore(deps-dev): bump prettier in the dev-tools group across 1 directory (11a7ce9)
+- (110d5fc)
+- chore(deps-dev): bump @types/node from 26.0.1 to 26.1.0 (3816e92)
+- (9392d5a)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (22c51e0)
+- (3d3c577)
+- chore: bump ws from 8.18.3 to 8.21.0 (dec7299)
+- (5c7a0e2)
+- chore(deps-dev): bump prettier in the dev-tools group across 1 directory (b2b9f9e)
+- (56e82dc)
+- chore(deps-dev): bump @types/node from 26.1.0 to 26.1.1 (8c32f3d)
+- (c59da80)
+- chore: bump actions/setup-node from 6 to 7 (e348288)
+- (ecf8afe)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (b3fe947)
+- (cf7a8c7)
+
 ## [0.8.1] - 2026-05-04
 
 ### Fixed
@@ -94,6 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - chore(deps-dev): bump the typescript-eslint group with 2 updates (4310200)
 - Merge branch 'main' into dependabot/npm_and_yarn/typescript-eslint-ea513a49e7 (8167c55)
 - (37a86c9)
+- [skip ci] Update version to v0.8.1 (7dffc5c)
 
 ## [0.8.0] - 2026-02-01
 
