@@ -1,4 +1,4 @@
-# Automatic Tasks for Obsidian
+# Auto Tasks
 
 Combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists.
 
