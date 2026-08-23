@@ -4,9 +4,8 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
     labels:
       - "⬆️ dependencies"
     assignees:
@@ -18,37 +17,22 @@ updates:
     ignore:
       # Keep Obsidian at current version - controlled via package.json overrides
       - dependency-name: "obsidian"
-      # Prevent major TypeScript version bumps - only allow minor/patch updates
+      # Only allow patch/minor updates for TypeScript - major versions may break @typescript-eslint compatibility
       - dependency-name: "typescript"
-        update-types:
-          - "version-update:semver-major"
+        update-types: ["version-update:semver-major"]
     groups:
-      # Group all TypeScript/ESLint related updates
-      typescript-eslint:
-        patterns:
-          - "@typescript-eslint/*"
-          - "typescript"
-      # Group all Jest related updates
-      jest:
-        patterns:
-          - "jest*"
-          - "@types/jest"
-          - "ts-jest"
-      # Group development tools
-      dev-tools:
-        patterns:
-          - "prettier"
-          - "husky"
-          - "lint-staged"
-          - "eslint"
+      # Single group for all dev dependencies - one PR per cycle rather than
+      # several, since everything here is a build/test tool
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+      interval: "monthly"
+    open-pull-requests-limit: 2
     labels:
       - "⬆️ dependencies"
     assignees:
