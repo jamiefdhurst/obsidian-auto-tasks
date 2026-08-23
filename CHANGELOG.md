@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2026-08-23
+
+### Fixed
+
+- fix: repair release pipeline and harden dependabot auto-merge (f50ae64)
+- (c0c4f8f)
+
+### Other
+
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (cf11e6a)
+- (6274e56)
+- chore(deps-dev): bump ts-jest in the jest group across 1 directory (9a365b7)
+- (0e7c099)
+- chore(deps-dev): bump the dev-tools group across 1 directory with 2 updates (9e4c1a4)
+- (50c10ab)
+- chore(deps-dev): bump @types/node from 26.1.1 to 26.1.2 (d86cc9b)
+- (a59ac38)
+- chore(deps-dev): bump lint-staged (af71432)
+- (1f7a96b)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (76d3dd2)
+- (a04beee)
+- chore(deps-dev): bump the typescript-eslint group with 2 updates (6fe7074)
+- (4f70e98)
+- chore(deps-dev): bump @types/node from 26.1.2 to 26.2.0 (a539789)
+- (c18e189)
+- chore(deps-dev): bump esbuild from 0.28.1 to 0.28.2 (49e6ae0)
+- (fec7a21)
+- chore: reduce dependabot volume with monthly cadence and single dev group (8bb8359)
+
 ## [0.8.2] - 2026-07-23
 
 ### Fixed
@@ -83,6 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - (ecf8afe)
 - chore(deps-dev): bump the typescript-eslint group with 2 updates (b3fe947)
 - (cf7a8c7)
+- [skip ci] Update version to v0.8.2 (11544bb)
 
 ## [0.8.1] - 2026-05-04
 
