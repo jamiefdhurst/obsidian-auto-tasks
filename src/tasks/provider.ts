@@ -1,7 +1,8 @@
 import { moment, TAbstractFile } from 'obsidian';
-import { DailyNote, Note, WeeklyNote } from 'obsidian-periodic-notes-provider';
+import { DailyNote, PeriodicNote, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import { DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { KanbanProvider } from '../kanban/provider';
+import debug from '../log';
 import { IPeriodicitySettings, ISettings } from '../settings';
 import { ObsidianVault } from '../types';
 import { TaskFactory } from './factory';
@@ -37,11 +38,20 @@ export class TasksProvider {
     settings: ISettings,
     periodicitySetting: IPeriodicitySettings,
     file: TAbstractFile,
-    cls: Note
+    cls: PeriodicNote
   ): Promise<void> {
     if (periodicitySetting.available && periodicitySetting.carryOver && cls.isValid(file)) {
-      // Get the previous entry
-      const previousEntryContents: string = await this.vault.read(cls.getPrevious());
+      const newNote = cls.getCurrent();
+      if (newNote === undefined) {
+        debug('No current note to copy tasks into, skipping');
+        return;
+      }
+
+      // Get the previous entry - there may not be one, in which case there is
+      // nothing to carry over, though due tasks can still apply below
+      const previousEntry = cls.getPrevious();
+      const previousEntryContents: string =
+        previousEntry !== undefined ? await this.vault.read(previousEntry) : '';
       const tasks: Task[] = this.factory
         .newCollection(previousEntryContents)
         .getTasksFromLists(periodicitySetting.searchHeaders);
@@ -78,7 +88,7 @@ export class TasksProvider {
       }
 
       // Add them into the new entry
-      await this.vault.process(cls.getCurrent(), (contents) => {
+      await this.vault.process(newNote, (contents) => {
         if (contents.indexOf(periodicitySetting.header + '\n') > -1) {
           return contents.replace(
             periodicitySetting.header + '\n',

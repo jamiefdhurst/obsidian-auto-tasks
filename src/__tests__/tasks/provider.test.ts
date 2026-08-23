@@ -33,7 +33,7 @@ describe('tasks provider', () => {
     dailyNote = jest.fn() as unknown as DailyNote;
     dailyNote.getCurrent = jest.fn();
     dailyNote.getNextDate = jest.fn();
-    dailyNote.getPrevious = jest.fn();
+    dailyNote.getPrevious = jest.fn().mockReturnValue(new TFile());
     dailyNote.isValid = jest.fn();
     weeklyNote = jest.fn() as unknown as WeeklyNote;
     settings = Object.assign({}, DEFAULT_SETTINGS);
@@ -76,6 +76,40 @@ describe('tasks provider', () => {
     await sut.checkAndCopyTasks(settings, new TFile());
 
     expect(vaultRead).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when there is no current note to copy into', async () => {
+    settings.daily.available = true;
+    settings.daily.carryOver = true;
+    jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+    jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(undefined);
+    const vaultRead = jest.spyOn(vault, 'read');
+    const vaultProcess = jest.spyOn(vault, 'process');
+
+    await sut.checkAndCopyTasks(settings, new TFile());
+
+    expect(vaultRead).not.toHaveBeenCalled();
+    expect(vaultProcess).not.toHaveBeenCalled();
+  });
+
+  it('adds the header without reading when there is no previous note', async () => {
+    settings.daily.available = true;
+    settings.daily.carryOver = true;
+    settings.daily.header = '## Daily TODOs';
+    jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+    jest.spyOn(dailyNote, 'getPrevious').mockReturnValue(undefined);
+    jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(new TFile());
+    const vaultRead = jest.spyOn(vault, 'read');
+    let result;
+    jest.spyOn(vault, 'process').mockImplementation((file, fn, options) => {
+      result = fn('');
+      return Promise.resolve(result);
+    });
+
+    await sut.checkAndCopyTasks(settings, new TFile());
+
+    expect(vaultRead).not.toHaveBeenCalled();
+    expect(result).toEqual(`\n\n## Daily TODOs\n\n`);
   });
 
   it('copies tasks from previous note', async () => {

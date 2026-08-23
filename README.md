@@ -2,7 +2,9 @@
 
 Combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists.
 
-Designed to work with [Obsidian](https://obsidian.md), requires the [Periodic Notes](https://github.com/liamcain/obsidian-periodic-notes) plugin. The [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and [Kanban](https://github.com/mgmeyers/obsidian-kanban) plugins are optional.
+Designed to work with [Obsidian](https://obsidian.md). The [Periodic Notes](https://github.com/liamcain/obsidian-periodic-notes), [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and [Kanban](https://github.com/mgmeyers/obsidian-kanban) plugins are all optional.
+
+When the Periodic Notes plugin is installed, this plugin respects its settings, using the templates, format and location you have selected. Without it, daily and weekly notes are created using Obsidian's own defaults - `YYYY-MM-DD` for daily and `gggg-[W]ww` for weekly (or your [Calendar](https://github.com/liamcain/obsidian-calendar-plugin) plugin settings, if you have it), each in the vault root with no template. This is provided through an [abstract provider](https://github.com/jamiefdhurst/obsidian-periodic-notes-provider) for the plugin.
 
 This plugin works well with the [Auto Periodic Notes](https://github.com/jamiefdhurst/obsidian-auto-periodic-notes) plugin.
 
@@ -38,7 +40,7 @@ All the tasks within the periodic notes and elsewhere in the vault can be collat
 
 ![Example of Settings screen within Obsidian](/docs/settings.png)
 
-Depending on your Periodic Notes configuration, the plugin supports working with both daily and weekly notes - these must be enabled in the Periodic Notes plugin to appear. For each type of note you can choose to carry over your daily tasks, whether to automatically add any tasks from anywhere in your vault that are due either that day or week, and how to read the tasks from your existing periodic note.
+The plugin supports working with both daily and weekly notes. If you have the Periodic Notes plugin installed, only the note types you have enabled there appear; without it, both are available. For each type of note you can choose to carry over your daily tasks, whether to automatically add any tasks from anywhere in your vault that are due either that day or week, and how to read the tasks from your existing periodic note.
 
 When the Kanban plugin is available, you can choose to sync all of the tasks within your vault automatically to a board, which will be created for you.
 

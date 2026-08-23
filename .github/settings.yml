@@ -1,6 +1,6 @@
 repository:
   name: obsidian-auto-tasks
-  description: Obsidian plugin to combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists. Requires the "Periodic Notes" and "Tasks" plugins.
+  description: Obsidian plugin to combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists. Optionally uses the "Periodic Notes" and "Tasks" plugins.
   topics: obsidian, typescript, plugin, notes, pkm
   private: false
   has_issues: true
