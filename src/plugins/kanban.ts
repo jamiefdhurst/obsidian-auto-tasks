@@ -3,7 +3,7 @@ import type { ObsidianAppWithPlugins } from '../types';
 
 const PLUGIN_NAME: string = 'obsidian-kanban';
 
-export interface IKanbanPlugin extends Plugin {}
+export type IKanbanPlugin = Plugin;
 
 export class KanbanPluginAdapter {
   private app: ObsidianAppWithPlugins;

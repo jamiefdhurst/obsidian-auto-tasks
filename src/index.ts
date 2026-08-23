@@ -15,7 +15,8 @@ import { TaskFactory } from './tasks/factory';
 import debug from './log';
 
 export default class AutoTasks extends Plugin {
-  private settings: ISettings = DEFAULT_SETTINGS;
+  // Public because Obsidian's declarative settings API reads `plugin.settings`
+  public settings: ISettings = DEFAULT_SETTINGS;
   private periodicNotesPlugin: PeriodicNotesPluginAdapter;
   private tasksPlugin: TasksPluginAdapter;
   private taskFactory: TaskFactory;
@@ -45,12 +46,16 @@ export default class AutoTasks extends Plugin {
     return AutoTasks.instance.getSettings();
   }
 
-  async onload(): Promise<void> {
+  onload(): void {
     this.updateSettings = this.updateSettings.bind(this);
 
+    void this.initialise();
+  }
+
+  async initialise(): Promise<void> {
     await this.loadSettings();
 
-    this.app.workspace.onLayoutReady(await this.onLayoutReady.bind(this));
+    this.app.workspace.onLayoutReady(() => void this.onLayoutReady());
   }
 
   async onLayoutReady(): Promise<void> {
@@ -77,7 +82,7 @@ export default class AutoTasks extends Plugin {
     // Copy tasks over when a new daily/weekly note is created
     this.registerEvent(
       this.app.vault.on('create', (file) => {
-        this.tasks.checkAndCopyTasks(this.settings, file);
+        void this.tasks.checkAndCopyTasks(this.settings, file);
       })
     );
 
@@ -86,7 +91,7 @@ export default class AutoTasks extends Plugin {
     await this.kanban.migrateOrigins();
 
     // Sync all outstanding tasks now to the Kanban board
-    this.kanban.synchroniseTasks();
+    void this.kanban.synchroniseTasks();
     this.registerEvent(
       this.app.vault.on('create', (file) => {
         if (file instanceof TFile && file.name !== this.settings.kanbanFile) {
@@ -134,7 +139,9 @@ export default class AutoTasks extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    // loadData() is typed as any, so narrow it before merging over the defaults
+    const savedSettings = (await this.loadData()) as Partial<ISettings> | null;
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedSettings);
   }
 
   async updateSettings(settings: ISettings): Promise<void> {
@@ -150,7 +157,7 @@ export default class AutoTasks extends Plugin {
     const pluginSettings = this.periodicNotesPlugin.convertSettings();
     this.settings.daily.available = pluginSettings.daily.available;
     this.settings.weekly.available = pluginSettings.weekly.available;
-    this.updateSettings(this.settings);
+    void this.updateSettings(this.settings);
   }
 
   private onSettingsUpdate(): void {

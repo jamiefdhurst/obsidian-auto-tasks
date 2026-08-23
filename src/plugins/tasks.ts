@@ -38,6 +38,6 @@ export class TasksPluginAdapter {
     if (!this.getPlugin()) {
       return { taskFormat: 'tasksEmojiFormat' };
     }
-    return this.getPlugin().loadData();
+    return (await this.getPlugin().loadData()) as ITasksPluginSettings;
   }
 }

@@ -1,7 +1,17 @@
 import * as momentImpl from 'moment';
 
 export class Plugin {}
-export class PluginSettingTab {}
+export class PluginSettingTab {
+  app: unknown;
+  containerEl: HTMLElement = document.createElement('div');
+
+  constructor(app: unknown, plugin: unknown) {
+    this.app = app;
+  }
+
+  refreshDomState = jest.fn();
+  update = jest.fn();
+}
 export class TAbstractFile {
   public name!: string;
   public path!: string;

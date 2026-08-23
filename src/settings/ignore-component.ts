@@ -50,7 +50,7 @@ export abstract class IgnoreComponent {
       setIcon(deleteEl, 'lucide-trash-2');
       deleteEl.setAttribute('data-setting', entry);
       deleteEl.addEventListener('click', (event: MouseEvent) => {
-        this.handleRemoveIgnoredEntry(entry);
+        void this.handleRemoveIgnoredEntry(entry);
         event.stopPropagation();
       });
     }
@@ -61,7 +61,7 @@ export abstract class IgnoreComponent {
     this.addEntryInputEl = controlsWrapperEl.createEl('input', { type: 'text' });
     const addEl = controlsWrapperEl.createEl('button', { cls: 'button', text: 'Add entry' });
     addEl.addEventListener('click', (event: MouseEvent) => {
-      this.handleAddIgnoredEntry(this.addEntryInputEl.value);
+      void this.handleAddIgnoredEntry(this.addEntryInputEl.value);
       this.addEntryInputEl.value = '';
       event.stopPropagation();
     });

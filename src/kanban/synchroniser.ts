@@ -48,7 +48,7 @@ export class KanbanSynchroniser {
     }
 
     // Archive any tasks that are older than 2 weeks
-    await this.archiveOldTasks(board);
+    this.archiveOldTasks(board);
 
     const boardFile = this.vault.getFileByPath(board.getFileName());
     if (boardFile instanceof TFile) {
@@ -109,7 +109,7 @@ export class KanbanSynchroniser {
     }
   }
 
-  private async archiveOldTasks(board: KanbanBoard) {
+  private archiveOldTasks(board: KanbanBoard): void {
     const currentTasks: TaskCollection = board.getTaskCollection();
     const archivedTasks: TaskCollection = board.getArchive();
     for (const doneTask of currentTasks.getTasksFromLists([DONE])) {
