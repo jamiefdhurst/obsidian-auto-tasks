@@ -4,18 +4,14 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - '*.js'
-      - '*.mjs'
-      - '*.json'
-      - '*.ts'
-      - '*.md'
-      - 'docs/**'
-      - 'src/**'
+    # No paths filter: should_release already gates on commit type, and a filter
+    # here strands commits that only touch .github/**
 
 permissions:
   contents: write
   id-token: write
+  # Required to record provenance attestations for the release assets
+  attestations: write
 
 jobs:
   Build:
@@ -73,6 +69,15 @@ jobs:
       - name: Build
         if: steps.version.outputs.should_release == 'true'
         run: npm run build
+      - name: Attest Build Provenance
+        if: steps.version.outputs.should_release == 'true'
+        uses: actions/attest-build-provenance@v4
+        with:
+          # All three files are published as release assets, so all are attested
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
       - name: Generate Release Notes
         if: steps.version.outputs.should_release == 'true'
         id: release_notes

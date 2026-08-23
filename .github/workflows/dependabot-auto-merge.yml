@@ -13,8 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
     steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Enable auto-merge
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Must be a PAT, and it must exist as a *Dependabot* secret as well as an
+          # Actions one - dependabot-triggered runs cannot see Actions secrets, and
+          # merges made with GITHUB_TOKEN do not trigger build.yml
+          GH_TOKEN: ${{ secrets.PAT }}
+      - name: Flag major update for manual review
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "::notice::Major update to ${{ steps.metadata.outputs.dependency-names }} - not auto-merged, review and merge manually"
+          gh pr comment "$PR_URL" --body "🚧 Major version update — auto-merge is deliberately skipped. Review the changelog and merge manually."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.PAT }}
