@@ -1,6 +1,5 @@
-import { Notice, Plugin, TFile, type PluginManifest } from 'obsidian';
+import { Plugin, TFile, type PluginManifest } from 'obsidian';
 import {
-  ObsidianAppWithPlugins,
   PERIODIC_NOTES_EVENT_SETTING_UPDATED,
   PeriodicNotesPluginAdapter,
 } from 'obsidian-periodic-notes-provider';
@@ -31,7 +30,7 @@ export default class AutoTasks extends Plugin {
 
     const vault: ObsidianVault = app.vault;
 
-    this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app as ObsidianAppWithPlugins);
+    this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app);
     this.tasksPlugin = new TasksPluginAdapter(app);
     this.kanbanPlugin = new KanbanPluginAdapter(app);
 
@@ -55,12 +54,13 @@ export default class AutoTasks extends Plugin {
   }
 
   async onLayoutReady(): Promise<void> {
-    if (!this.periodicNotesPlugin.isEnabled()) {
-      new Notice(
-        'The Periodic Notes plugin must be installed and available for Auto Tasks to work.',
-        10000
+    // The Periodic Notes plugin is optional - when it is absent the provider
+    // falls back to the native obsidian-daily-notes-interface defaults, so the
+    // plugin still works, it just has no external settings source to read from
+    if (this.periodicNotesPlugin.isNative()) {
+      debug(
+        'Periodic Notes plugin is not available, falling back to native periodic note defaults'
       );
-      return;
     }
 
     debug('Starting initial layout and load');
@@ -144,6 +144,9 @@ export default class AutoTasks extends Plugin {
   }
 
   private syncPeriodicNotesSettings(): void {
+    // Resolves against the Periodic Notes plugin when it is installed, and
+    // against the native defaults otherwise - either way this never throws
+    debug('Resolving the available periodic note types');
     const pluginSettings = this.periodicNotesPlugin.convertSettings();
     this.settings.daily.available = pluginSettings.daily.available;
     this.settings.weekly.available = pluginSettings.weekly.available;
