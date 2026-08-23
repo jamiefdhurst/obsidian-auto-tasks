@@ -97,6 +97,9 @@ jobs:
         run: |
           npm audit --audit-level=moderate
         continue-on-error: true
+      - name: Lint
+        run: |
+          npm run lint
       - name: Build
         run: |
           npm run build
@@ -147,5 +150,5 @@ jobs:
 
             ---
 
-            <sub>This PR will ${{ steps.version.outputs.should_release == 'true' && format('trigger a **{0}** version bump from `{1}` to `{2}`', steps.version.outputs.bump_type, steps.version.outputs.previous_version, steps.version.outputs.version) || 'not trigger a release (only docs/test/chore/build/ci/style/revert changes)' }}</sub>
+            <sub>Merging this PR will ${{ steps.version.outputs.should_release == 'true' && format('release a **{0}** bump, `{1}` → `{2}`. This covers everything unreleased on `main`, not only the commits in this PR.', steps.version.outputs.bump_type, steps.version.outputs.previous_version, steps.version.outputs.version) || 'not release (nothing unreleased on `main` beyond docs/test/chore/build/ci/style/revert changes)' }}</sub>
           comment-tag: version_impact
