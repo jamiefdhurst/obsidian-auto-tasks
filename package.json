@@ -1,6 +1,6 @@
 {
   "name": "obsidian-auto-tasks",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists. Optionally uses the Periodic Notes and Tasks plugins.",
   "main": "main.js",
   "scripts": {
