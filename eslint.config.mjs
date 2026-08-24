@@ -13,7 +13,6 @@ export default tseslint.config(
       '*.config.js',
       '*.mjs',
       '!eslint.config.mjs',
-      'jest-environment-obsidian.js',
     ],
   },
 
@@ -96,6 +95,18 @@ export default tseslint.config(
       'obsidianmd/no-nodejs-modules': 'off',
       'obsidianmd/prefer-window-timers': 'off',
       'obsidianmd/rule-custom-message': 'off',
+    },
+  },
+
+  // The DOM shim deliberately reimplements the Obsidian helpers that jsdom does
+  // not provide, so the rules that police how plugin source *uses* that API do
+  // not apply to the definitions themselves
+  {
+    files: ['src/__tests__/setup.ts'],
+    rules: {
+      'obsidianmd/no-global-this': 'off',
+      'obsidianmd/no-static-styles-assignment': 'off',
+      'obsidianmd/prefer-instanceof': 'off',
     },
   }
 );
