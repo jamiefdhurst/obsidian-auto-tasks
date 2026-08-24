@@ -9,7 +9,6 @@ import { KanbanSynchroniser } from '../../kanban/synchroniser';
 import { Watcher } from '../../kanban/watcher';
 import { DEFAULT_SETTINGS, ISettings } from '../../settings';
 import { TaskFactory } from '../../tasks/factory';
-import { Task } from '../../tasks/task';
 import { ObsidianVault } from '../../types';
 
 // Mock task for testing
@@ -158,13 +157,13 @@ describe('kanban provider', () => {
     expect(result).toBeUndefined();
   });
 
-  it('passes any errors from board manager', () => {
+  it('passes any errors from board manager', async () => {
     settings.kanbanSync = true;
     settings.kanbanFile = 'example.md';
     boardManager.get = jest.fn();
     jest.spyOn(boardManager, 'get').mockRejectedValue(new KanbanBoardOpenError());
 
-    expect(sut.getBoard()).rejects.toThrow(KanbanBoardOpenError);
+    await expect(sut.getBoard()).rejects.toThrow(KanbanBoardOpenError);
   });
 
   it('gets board successfully', async () => {
@@ -225,9 +224,9 @@ describe('kanban provider', () => {
       taskFactory.newTask = jest.fn().mockImplementation((line) => {
         const match = line.match(/^\s*-\s\[([x\s])\]\s+(.+)/);
         if (match) {
-          return new MockTask(match[2].trim(), match[1] === 'x') as unknown as Task;
+          return new MockTask(match[2].trim(), match[1] === 'x');
         }
-        return new MockTask('Unknown', false) as unknown as Task;
+        return new MockTask('Unknown', false);
       });
 
       sut = new KanbanProvider(
@@ -343,9 +342,9 @@ describe('kanban provider', () => {
       taskFactory.newTask = jest.fn().mockImplementation((line) => {
         const match = line.match(/^\s*-\s\[([x\s])\]\s+(.+)/);
         if (match) {
-          return new MockTask(match[2].trim(), match[1] === 'x') as unknown as Task;
+          return new MockTask(match[2].trim(), match[1] === 'x');
         }
-        return new MockTask('Unknown', false) as unknown as Task;
+        return new MockTask('Unknown', false);
       });
 
       sut = new KanbanProvider(
@@ -432,9 +431,9 @@ describe('kanban provider', () => {
       taskFactory.newTask = jest.fn().mockImplementation((line) => {
         const match = line.match(/^\s*-\s\[([x\s])\]\s+(.+)/);
         if (match) {
-          return new MockTask(match[2].trim(), match[1] === 'x') as unknown as Task;
+          return new MockTask(match[2].trim(), match[1] === 'x');
         }
-        return new MockTask('Unknown', false) as unknown as Task;
+        return new MockTask('Unknown', false);
       });
 
       plugin.updateSettings = jest.fn();

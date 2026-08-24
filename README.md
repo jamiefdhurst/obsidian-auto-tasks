@@ -1,8 +1,8 @@
-# Automatic Tasks for Obsidian
+# Auto Tasks
 
 Combine periodic notes with tags and tasks to automatically manage your daily, weekly and project TODO lists.
 
-Designed to work with [Obsidian](https://obsidian.md). The [Periodic Notes](https://github.com/liamcain/obsidian-periodic-notes), [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and [Kanban](https://github.com/mgmeyers/obsidian-kanban) plugins are all optional.
+Designed to work with [Obsidian](https://obsidian.md) 1.13.0 or later. The [Periodic Notes](https://github.com/liamcain/obsidian-periodic-notes), [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks) and [Kanban](https://github.com/mgmeyers/obsidian-kanban) plugins are all optional.
 
 When the Periodic Notes plugin is installed, this plugin respects its settings, using the templates, format and location you have selected. Without it, daily and weekly notes are created using Obsidian's own defaults - `YYYY-MM-DD` for daily and `gggg-[W]ww` for weekly (or your [Calendar](https://github.com/liamcain/obsidian-calendar-plugin) plugin settings, if you have it), each in the vault root with no template. This is provided through an [abstract provider](https://github.com/jamiefdhurst/obsidian-periodic-notes-provider) for the plugin.
 

@@ -90,7 +90,7 @@ export abstract class TaskCollection {
   }
 
   getList(task: Task): string {
-    for (let [list, tasks] of this.tasks) {
+    for (const [list, tasks] of this.tasks) {
       for (const existingTask of tasks) {
         if (task.equals(existingTask)) {
           return list;
@@ -156,7 +156,7 @@ export abstract class TaskCollection {
     headerSeparator = headerSeparator || '\n';
 
     let content: string = '';
-    for (let [list, tasks] of this.tasks) {
+    for (const [list, tasks] of this.tasks) {
       content = `${content}${list}\n\n`;
       for (const task of tasks) {
         content = `${content}${task.toString()}\n`;

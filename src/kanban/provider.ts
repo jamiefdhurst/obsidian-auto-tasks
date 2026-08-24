@@ -64,7 +64,7 @@ export class KanbanProvider {
     } catch {
       // Silently handle errors
     } finally {
-      setTimeout(() => {
+      window.setTimeout(() => {
         this.watcher.setForwardSyncInProgress(false);
       }, 100);
     }
@@ -93,7 +93,7 @@ export class KanbanProvider {
 
       this.previousBoardTasks = this.cloneTasks(currentTasks);
     } catch (error) {
-      debug(`Error during reverse sync: ${error}`);
+      debug(`Error during reverse sync: ${String(error)}`);
     }
   }
 
@@ -186,7 +186,7 @@ export class KanbanProvider {
 
       this.previousBoardTasks = this.cloneTasks(boardTasks);
     } catch (error) {
-      debug(`Error during origin migration: ${error}`);
+      debug(`Error during origin migration: ${String(error)}`);
     }
   }
 

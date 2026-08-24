@@ -18,12 +18,16 @@ export type ObsidianVault = {
   modify(file: TFile, data: string, options?: DataWriteOptions): Promise<void>;
   process(file: TFile, fn: (data: string) => string, options?: DataWriteOptions): Promise<string>;
   getFiles(): TFile[];
-  on(name: 'create', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
-  on(name: 'modify', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
-  on(name: 'delete', callback: (file: TAbstractFile) => any, ctx?: any): EventRef;
-  on(name: 'rename', callback: (file: TAbstractFile, oldPath: string) => any, ctx?: any): EventRef;
+  on(name: 'create', callback: (file: TAbstractFile) => unknown, ctx?: unknown): EventRef;
+  on(name: 'modify', callback: (file: TAbstractFile) => unknown, ctx?: unknown): EventRef;
+  on(name: 'delete', callback: (file: TAbstractFile) => unknown, ctx?: unknown): EventRef;
+  on(
+    name: 'rename',
+    callback: (file: TAbstractFile, oldPath: string) => unknown,
+    ctx?: unknown
+  ): EventRef;
 };
 export type ObsidianWorkspaceWithOn = {
-  on(name: string, callback: () => void, ctx?: any): EventRef;
+  on(name: string, callback: () => void, ctx?: unknown): EventRef;
 };
 export type ObsidianWorkspace = Workspace & ObsidianWorkspaceWithOn;

@@ -63,12 +63,12 @@ export class Watcher {
     return this.forwardSyncInProgress;
   }
 
-  run(file: TFile) {
-    this.kanban.synchroniseTasks([file]);
+  run(file: TFile): void {
+    void this.kanban.synchroniseTasks([file]);
   }
 
   private runReverseSync(): void {
     debug('Running reverse sync from board change');
-    this.kanban.reverseSynchroniseTasks();
+    void this.kanban.reverseSynchroniseTasks();
   }
 }

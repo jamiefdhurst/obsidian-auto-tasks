@@ -27,7 +27,7 @@ export class IgnoreFolders extends IgnoreComponent {
     );
     const addEl = controlsWrapperEl.createEl('button', { cls: 'button', text: 'Add folder' });
     addEl.addEventListener('click', (event: MouseEvent) => {
-      this.handleAddIgnoredEntry(this.addEntryInputEl.value);
+      void this.handleAddIgnoredEntry(this.addEntryInputEl.value);
       this.addEntryInputEl.value = '';
       event.stopPropagation();
     });

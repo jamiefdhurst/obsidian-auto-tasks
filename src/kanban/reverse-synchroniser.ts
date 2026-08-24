@@ -82,7 +82,7 @@ export class ReverseKanbanSynchroniser {
         debug(`Saved changes to ${filePath}`);
       }
     } catch (error) {
-      debug(`Error processing file ${filePath}: ${error}`);
+      debug(`Error processing file ${filePath}: ${String(error)}`);
     }
   }
 

@@ -12,7 +12,7 @@ export class TaskFactory {
 
   constructor(pluginAdapter: TasksPluginAdapter) {
     this.pluginAdapter = pluginAdapter;
-    this.checkDataViewStatus();
+    void this.checkDataViewStatus();
   }
 
   private async checkDataViewStatus() {
@@ -20,14 +20,14 @@ export class TaskFactory {
   }
 
   newCollection(contents: string, addBoardHeaders?: boolean): TaskCollection {
-    this.checkDataViewStatus();
+    void this.checkDataViewStatus();
     return this.dataView
       ? new DataViewTaskCollection(contents, addBoardHeaders)
       : new EmojiTaskCollection(contents, addBoardHeaders);
   }
 
   newTask(line: string): Task {
-    this.checkDataViewStatus();
+    void this.checkDataViewStatus();
     return this.dataView ? new DataViewTask(line) : new EmojiTask(line);
   }
 }
