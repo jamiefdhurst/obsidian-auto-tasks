@@ -1,6 +1,7 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  testEnvironment: 'jest-environment-obsidian',
+  testEnvironment: 'jest-environment-jsdom',
+  setupFiles: ['./src/__tests__/setup.ts'],
   verbose: true,
   preset: 'ts-jest',
   transform: {
@@ -14,7 +15,12 @@ module.exports = {
       },
     ],
   },
+  testMatch: ['**/__tests__/**/*.test.ts'],
   moduleFileExtensions: ['js', 'd.ts', 'ts'],
   coverageReporters: ['html', 'text', 'cobertura'],
-  collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!<rootDir>/node_modules/'],
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!src/__tests__/**',
+    '!<rootDir>/node_modules/',
+  ],
 };
