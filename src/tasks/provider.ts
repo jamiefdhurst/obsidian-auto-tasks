@@ -55,11 +55,10 @@ export class TasksProvider {
       const tasks: Task[] = this.factory
         .newCollection(previousEntryContents)
         .getTasksFromLists(periodicitySetting.searchHeaders);
-      // Filter out complete and not-needed parent tasks, then recursively filter children
-      let tasksToAdd: Task[] = tasks.filter((task) => !task.isComplete() && !task.isNotNeeded());
+      // Only plain open checkboxes carry over, then recursively filter children
+      let tasksToAdd: Task[] = tasks.filter((task) => task.isOpen());
       for (const task of tasksToAdd) {
-        task.filterIncompleteChildren();
-        task.filterNotNeededChildren();
+        task.filterNonOpenChildren();
         // Reset indent levels to start from 0 for carried over tasks
         task.setIndentLevel(0);
       }

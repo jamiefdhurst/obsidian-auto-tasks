@@ -211,6 +211,24 @@ describe('ReverseKanbanSynchroniser', () => {
       expect(content).toContain('- [x] Task 1 📅 2024-01-01 ⏫');
     });
 
+    it('locates a task carrying a custom status but leaves it untouched', async () => {
+      const file = new TFile();
+      file.path = 'file1.md';
+      jest.spyOn(vault, 'getFileByPath').mockReturnValue(file);
+      jest.spyOn(vault, 'read').mockResolvedValue('## TODOs\n\n- [>] Task 1\n');
+      const vaultModify = jest.spyOn(vault, 'modify');
+
+      const changes: TaskCompletionChange[] = [
+        { taskName: 'Task 1', isComplete: true, origins: ['file1.md'] },
+      ];
+
+      await sut.process(changes);
+
+      // The line is found - it is not reported as missing - but only plain
+      // [ ] and [x] checkboxes are ever rewritten, so nothing is saved
+      expect(vaultModify).not.toHaveBeenCalled();
+    });
+
     it('handles indented tasks', async () => {
       const file = new TFile();
       file.path = 'file1.md';

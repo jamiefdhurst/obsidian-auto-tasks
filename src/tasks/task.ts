@@ -1,6 +1,7 @@
 import type { Moment } from 'moment';
 import { moment } from 'obsidian';
 import AutoTasks from '..';
+import { STATUS_COMPLETE, STATUS_NOT_NEEDED, STATUS_OPEN, TASK_STATUS } from './status';
 
 export const DUE_DATE_FORMAT: string = 'YYYY-MM-DD';
 export const DEFAULT_INDENT: string = '\t';
@@ -16,6 +17,7 @@ export abstract class Task {
   protected line: string;
   protected metadata: string = '';
   protected name: string = '';
+  protected status: string = STATUS_OPEN;
   protected origins: string[] = [];
 
   constructor(line: string) {
@@ -76,11 +78,15 @@ export abstract class Task {
     return this.carriedOver ? AutoTasks.getSettings().carryOverPrefix + ' ' : '';
   }
 
-  protected getCompleteChar(): string {
-    if (this.notNeeded) {
-      return 'n';
-    }
-    return this.complete ? 'x' : ' ';
+  protected getStatusChar(): string {
+    return this.status;
+  }
+
+  protected parseStatus(): void {
+    const matched = this.line.match(TASK_STATUS);
+    this.status = matched ? matched[1] : STATUS_OPEN;
+    this.complete = this.status === STATUS_COMPLETE;
+    this.notNeeded = this.status === STATUS_NOT_NEEDED;
   }
 
   protected parseCarriedOver(): void {
@@ -132,6 +138,21 @@ export abstract class Task {
     return !!this.complete;
   }
 
+  // Only a plain, untouched checkbox is eligible to be carried over - anything
+  // with a custom status has been deliberately marked by the user (or by a
+  // previous carry over) and should stay where it is
+  isOpen(): boolean {
+    return this.status === STATUS_OPEN;
+  }
+
+  getLine(): string {
+    return this.line;
+  }
+
+  getStatus(): string {
+    return this.status;
+  }
+
   isNotNeeded(): boolean {
     return !!this.notNeeded;
   }
@@ -155,19 +176,13 @@ export abstract class Task {
     }
   }
 
-  filterIncompleteChildren(): void {
-    this.children = this.children.filter((child) => !child.isComplete());
+  // Drops every child that is not a plain open checkbox - complete, not needed
+  // and custom statuses are all left behind rather than carried over
+  filterNonOpenChildren(): void {
+    this.children = this.children.filter((child) => child.isOpen());
     // Recursively filter grandchildren
     for (const child of this.children) {
-      child.filterIncompleteChildren();
-    }
-  }
-
-  filterNotNeededChildren(): void {
-    this.children = this.children.filter((child) => !child.isNotNeeded());
-    // Recursively filter grandchildren
-    for (const child of this.children) {
-      child.filterNotNeededChildren();
+      child.filterNonOpenChildren();
     }
   }
 
