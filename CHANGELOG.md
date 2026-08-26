@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-08-26
+
+### Added
+
+- feat: mark carried over tasks in the previous note (b445f90)
+- (fdc567c)
+
+### Changed
+
+- refactor: recognise custom task statuses (f1a6c9c)
+
+### Documentation
+
+- docs: clarify the two carry over marking settings (90d74c8)
+- docs: spell out what each carry over marking setting produces (66b36d9)
+- docs: update settings screenshot for the carry over status setting (e6ba599)
+
+### Other
+
+- chore: resolve dependabot security alerts (6778039)
+- (090b978)
+
+### Testing
+
+- test: replace archived jest-environment-obsidian with jsdom and a DOM shim (9da54b4)
+- (c86cbfd)
+
 ## [0.10.0] - 2026-08-24
 
 ### Added
@@ -15,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Other
 
 - chore: update README to match obsidian plugin name (8bc65a9)
+- [skip ci] Update version to v0.10.0 (a61b03e)
 
 ## [0.9.0] - 2026-08-23
 
