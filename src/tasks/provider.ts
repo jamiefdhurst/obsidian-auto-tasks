@@ -116,14 +116,34 @@ export class TasksProvider {
       // Get the previous entry - there may not be one, in which case there is
       // nothing to carry over, though due tasks can still apply below
       const previousEntry = cls.getPrevious();
+      if (!previousEntry) {
+        debug(
+          `No previous note found to carry tasks from - the ${periodicitySetting.header} header will be added empty`
+        );
+      } else {
+        debug(`Carrying tasks from ${previousEntry.path} into ${newNote.path}`);
+      }
+
       const previousEntryContents: string = previousEntry
         ? await this.vault.read(previousEntry)
         : '';
       const tasks: Task[] = this.factory
         .newCollection(previousEntryContents)
         .getTasksFromLists(periodicitySetting.searchHeaders);
+      if (previousEntry) {
+        const headers = periodicitySetting.searchHeaders.length
+          ? `header(s) ${periodicitySetting.searchHeaders.toString()}`
+          : 'the whole note';
+        debug(`Found ${tasks.length} task(s) in ${previousEntry.path} searching ${headers}`);
+      }
+
       // Only plain open checkboxes carry over, then recursively filter children
       let tasksToAdd: Task[] = tasks.filter((task) => task.isOpen());
+      if (tasks.length && !tasksToAdd.length) {
+        debug(
+          `None of the ${tasks.length} task(s) are open - only a plain "- [ ]" checkbox is carried over`
+        );
+      }
       for (const task of tasksToAdd) {
         task.filterNonOpenChildren();
         // Reset indent levels to start from 0 for carried over tasks
@@ -157,6 +177,8 @@ export class TasksProvider {
       if (settings.carryOverPrefix) {
         tasksToAdd = tasksToAdd.map((task) => task.markCarriedOver());
       }
+
+      debug(`Carrying ${tasksToAdd.length} task(s) over into ${newNote.path}`);
 
       // Add them into the new entry
       await this.vault.process(newNote, (contents) => {
