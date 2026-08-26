@@ -65,7 +65,14 @@ All the tasks within the periodic notes and elsewhere in the vault can be collat
 
 The plugin supports working with both daily and weekly notes. If you have the Periodic Notes plugin installed, only the note types you have enabled there appear; without it, both are available. For each type of note you can choose to carry over your daily tasks, whether to automatically add any tasks from anywhere in your vault that are due either that day or week, and how to read the tasks from your existing periodic note.
 
-Under "All tasks" you can set a prefix to add to each carried over task, and the status character to write back into the previous note for tasks that have been carried forward. Leave the status blank to leave your previous notes untouched.
+Under "All tasks" there are two separate ways to mark a carried over task, which can be used together:
+
+| Setting                                     | Where it applies  | What it changes                                    |
+| ------------------------------------------- | ----------------- | -------------------------------------------------- |
+| Prefix for carried over tasks               | The new note      | Text added before the task name, e.g. `[<]`        |
+| Mark carried over tasks in previous note as | The previous note | The single character inside the checkbox, e.g. `>` |
+
+With both set, yesterday's `- [ ] Write the release notes` becomes `- [>] Write the release notes`, and today's copy reads `- [ ] [<] Write the release notes`. Leave either blank to skip it.
 
 When the Kanban plugin is available, you can choose to sync all of the tasks within your vault automatically to a board, which will be created for you.
 
