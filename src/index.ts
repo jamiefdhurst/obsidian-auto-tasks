@@ -5,6 +5,7 @@ import {
 } from 'obsidian-periodic-notes-provider';
 import { LOADED, SETTINGS_UPDATED } from './events';
 import { KanbanProvider } from './kanban/provider';
+import { CoreNotesAdapter } from './plugins/core-notes';
 import { KanbanPluginAdapter } from './plugins/kanban';
 import { TasksPluginAdapter } from './plugins/tasks';
 import { DEFAULT_SETTINGS, type ISettings } from './settings';
@@ -18,6 +19,7 @@ export default class AutoTasks extends Plugin {
   // Public because Obsidian's declarative settings API reads `plugin.settings`
   public settings: ISettings = DEFAULT_SETTINGS;
   private periodicNotesPlugin: PeriodicNotesPluginAdapter;
+  private coreNotes: CoreNotesAdapter;
   private tasksPlugin: TasksPluginAdapter;
   private taskFactory: TaskFactory;
   private kanbanPlugin: KanbanPluginAdapter;
@@ -32,6 +34,7 @@ export default class AutoTasks extends Plugin {
     const vault: ObsidianVault = app.vault;
 
     this.periodicNotesPlugin = new PeriodicNotesPluginAdapter(app);
+    this.coreNotes = new CoreNotesAdapter(app);
     this.tasksPlugin = new TasksPluginAdapter(app);
     this.kanbanPlugin = new KanbanPluginAdapter(app);
 
@@ -155,8 +158,20 @@ export default class AutoTasks extends Plugin {
     // against the native defaults otherwise - either way this never throws
     debug('Resolving the available periodic note types');
     const pluginSettings = this.periodicNotesPlugin.convertSettings();
-    this.settings.daily.available = pluginSettings.daily.available;
-    this.settings.weekly.available = pluginSettings.weekly.available;
+
+    // The Periodic Notes plugin is not the only source of periodic notes. When
+    // it is installed but a periodicity is turned off in it, note lookup still
+    // falls back to the core Daily Notes plugin, or to Calendar for weekly, so
+    // those count as available too - without this a vault that uses core Daily
+    // Notes for its dailies looks like it has none at all and nothing runs
+    this.settings.daily.available =
+      pluginSettings.daily.available || this.coreNotes.isDailyNotesEnabled();
+    this.settings.weekly.available =
+      pluginSettings.weekly.available || this.coreNotes.isCalendarEnabled();
+
+    debug(
+      `Periodic notes available - daily: ${String(this.settings.daily.available)}, weekly: ${String(this.settings.weekly.available)}`
+    );
     void this.updateSettings(this.settings);
   }
 

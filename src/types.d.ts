@@ -10,7 +10,19 @@ export interface CommunityPluginManager {
 export type ObsidianAppWithPlugins = {
   plugins: CommunityPluginManager;
 };
-export type ObsidianApp = App & ObsidianAppWithPlugins;
+
+export interface InternalPlugin {
+  enabled: boolean;
+}
+
+export interface InternalPluginManager {
+  getPluginById(id: string): InternalPlugin | undefined;
+}
+
+export type ObsidianAppWithInternalPlugins = {
+  internalPlugins: InternalPluginManager;
+};
+export type ObsidianApp = App & ObsidianAppWithPlugins & ObsidianAppWithInternalPlugins;
 export type ObsidianVault = {
   getFileByPath(path: string): TFile | null;
   create(path: string, data: string, options?: DataWriteOptions): Promise<TFile>;
