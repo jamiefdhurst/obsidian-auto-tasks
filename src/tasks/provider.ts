@@ -9,6 +9,11 @@ import { TaskFactory } from './factory';
 import { TASK_CHECKBOX, VALID_STATUS } from './status';
 import { Task } from './task';
 
+// How long after a note is created a startup catch-up will still act on it.
+// The create event is the normal route in; this only covers notes made before
+// the listener was registered, which is a matter of seconds
+const CATCH_UP_WINDOW_MS: number = 60000;
+
 export class TasksProvider {
   private vault: ObsidianVault;
   private kanban: KanbanProvider;
@@ -30,22 +35,77 @@ export class TasksProvider {
     this.weeklyNote = weeklyNote || new WeeklyNote();
   }
 
-  async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<void> {
-    await this.checkAndCreateForSingleNote(settings, settings.weekly, file, this.weeklyNote);
-    await this.checkAndCreateForSingleNote(settings, settings.daily, file, this.dailyNote);
+  async checkAndCopyTasks(settings: ISettings, file: TAbstractFile): Promise<boolean> {
+    const weekly = await this.checkAndCreateForSingleNote(
+      settings,
+      settings.weekly,
+      file,
+      this.weeklyNote
+    );
+    const daily = await this.checkAndCreateForSingleNote(
+      settings,
+      settings.daily,
+      file,
+      this.dailyNote
+    );
+
+    return weekly || daily;
   }
 
+  /**
+   * Carries tasks over into a note that was created before the create listener
+   * was registered.
+   *
+   * Obsidian's own Daily Notes plugin can create today's note while the
+   * workspace is still loading, which is before onLayoutReady runs and so
+   * before anything is listening for it. Without this the note is simply
+   * missed and no tasks are carried over until the following day.
+   */
+  async catchUpOnStartup(settings: ISettings): Promise<boolean> {
+    const weekly = await this.checkAndCreateForSingleNote(
+      settings,
+      settings.weekly,
+      undefined,
+      this.weeklyNote
+    );
+    const daily = await this.checkAndCreateForSingleNote(
+      settings,
+      settings.daily,
+      undefined,
+      this.dailyNote
+    );
+
+    return weekly || daily;
+  }
+
+  // `file` is the file from a create event, or undefined for a startup catch-up
   private async checkAndCreateForSingleNote(
     settings: ISettings,
     periodicitySetting: IPeriodicitySettings,
-    file: TAbstractFile,
+    file: TAbstractFile | undefined,
     cls: PeriodicNote
-  ): Promise<void> {
-    if (periodicitySetting.available && periodicitySetting.carryOver && cls.isValid(file)) {
+  ): Promise<boolean> {
+    if (periodicitySetting.available && periodicitySetting.carryOver) {
       const newNote = cls.getCurrent();
       if (newNote === undefined) {
         debug('No current note to copy tasks into, skipping');
-        return;
+        return false;
+      }
+
+      // Never carry into the same note twice - the create event can fire more
+      // than once, and a catch-up must not repeat what the event already did
+      if (newNote.path && periodicitySetting.lastCarriedOver === newNote.path) {
+        debug(`Tasks have already been carried over into ${newNote.path}, skipping`);
+        return false;
+      }
+
+      if (file !== undefined) {
+        if (!cls.isValid(file)) {
+          return false;
+        }
+      } else if (!this.wasCreatedRecently(newNote)) {
+        debug('Current note was not created recently enough to catch up on, skipping');
+        return false;
       }
 
       // Get the previous entry - there may not be one, in which case there is
@@ -109,7 +169,20 @@ export class TasksProvider {
       if (previousEntry !== undefined) {
         await this.markCarriedOverTasks(settings, previousEntry, carriedOverLines);
       }
+
+      periodicitySetting.lastCarriedOver = newNote.path;
+
+      return true;
     }
+
+    return false;
+  }
+
+  private wasCreatedRecently(note: TFile): boolean {
+    // stat is absent on some mocked and remote files - treat an unknown
+    // creation time as too old to act on rather than risk a duplicate
+    const created = note.stat?.ctime;
+    return created !== undefined && created > Date.now() - CATCH_UP_WINDOW_MS;
   }
 
   // The raw source line of every task being carried over, including the nested

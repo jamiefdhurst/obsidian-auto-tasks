@@ -36,7 +36,12 @@ describe('tasks provider', () => {
     dailyNote.getPrevious = jest.fn().mockReturnValue(new TFile());
     dailyNote.isValid = jest.fn();
     weeklyNote = jest.fn() as unknown as WeeklyNote;
-    settings = Object.assign({}, DEFAULT_SETTINGS);
+    // Deep copy - the periodicity settings are nested, so a shallow copy would
+    // share them between tests
+    settings = Object.assign({}, DEFAULT_SETTINGS, {
+      daily: Object.assign({}, DEFAULT_SETTINGS.daily),
+      weekly: Object.assign({}, DEFAULT_SETTINGS.weekly),
+    });
     jest.spyOn(AutoTasks, 'getSettings').mockReturnValue(settings);
 
     sut = new TasksProvider(vault, kanban, taskFactory, dailyNote, weeklyNote);
@@ -70,12 +75,15 @@ describe('tasks provider', () => {
   it('does nothing when the provided file is invalid', async () => {
     settings.daily.available = true;
     settings.daily.carryOver = true;
+    jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(new TFile());
     jest.spyOn(dailyNote, 'isValid').mockReturnValue(false);
     const vaultRead = jest.spyOn(vault, 'read');
+    const vaultProcess = jest.spyOn(vault, 'process');
 
     await sut.checkAndCopyTasks(settings, new TFile());
 
     expect(vaultRead).not.toHaveBeenCalled();
+    expect(vaultProcess).not.toHaveBeenCalled();
   });
 
   it('does nothing when there is no current note to copy into', async () => {
@@ -677,6 +685,107 @@ describe('tasks provider', () => {
       expect(processed.get(currentFile)).toContain('- [ ] Due elsewhere');
       expect(processed.get(previousFile)).not.toContain('Due elsewhere');
       expect(processed.get(previousFile)).toContain('- [>] Incomplete 1');
+    });
+  });
+
+  describe('startup catch up', () => {
+    const recentFile = (path: string, ageMs: number = 0): TFile => {
+      const file = new TFile();
+      file.path = path;
+      file.stat = { ctime: Date.now() - ageMs, mtime: Date.now(), size: 0 };
+      return file;
+    };
+
+    beforeEach(() => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(vault, 'read').mockResolvedValue('## TODOs\n\n- [ ] Incomplete 1');
+      jest.spyOn(dailyNote, 'getPrevious').mockReturnValue(new TFile());
+    });
+
+    it('carries over into a note created just before the listener existed', async () => {
+      const currentFile = recentFile('Daily/2026-08-26.md');
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      const carried = await sut.catchUpOnStartup(settings);
+
+      expect(carried).toBe(true);
+      expect(result).toEqual('\n\n## Daily TODOs\n\n- [ ] Incomplete 1');
+      expect(settings.daily.lastCarriedOver).toEqual('Daily/2026-08-26.md');
+    });
+
+    it('does not touch a note that was created too long ago', async () => {
+      jest
+        .spyOn(dailyNote, 'getCurrent')
+        .mockReturnValue(recentFile('Daily/2026-08-26.md', 300000));
+      const vaultProcess = jest.spyOn(vault, 'process');
+
+      const carried = await sut.catchUpOnStartup(settings);
+
+      expect(carried).toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
+    });
+
+    it('does not touch a note with no creation time', async () => {
+      const currentFile = new TFile();
+      currentFile.path = 'Daily/2026-08-26.md';
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      const vaultProcess = jest.spyOn(vault, 'process');
+
+      const carried = await sut.catchUpOnStartup(settings);
+
+      expect(carried).toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
+    });
+
+    it('does not repeat what the create event already did', async () => {
+      const currentFile = recentFile('Daily/2026-08-26.md');
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => Promise.resolve(fn('')));
+
+      const carriedOnCreate = await sut.checkAndCopyTasks(settings, currentFile);
+
+      const vaultProcess = jest.spyOn(vault, 'process');
+      vaultProcess.mockClear();
+      const carriedOnCatchUp = await sut.catchUpOnStartup(settings);
+
+      expect(carriedOnCreate).toBe(true);
+      expect(carriedOnCatchUp).toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
+    });
+
+    it('does not carry into the same note twice from repeated create events', async () => {
+      const currentFile = recentFile('Daily/2026-08-26.md');
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => Promise.resolve(fn('')));
+
+      expect(await sut.checkAndCopyTasks(settings, currentFile)).toBe(true);
+      expect(await sut.checkAndCopyTasks(settings, currentFile)).toBe(false);
+    });
+
+    it('does nothing when carry over is disabled', async () => {
+      settings.daily.carryOver = false;
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(recentFile('Daily/2026-08-26.md'));
+      const vaultProcess = jest.spyOn(vault, 'process');
+
+      expect(await sut.catchUpOnStartup(settings)).toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when there is no current note', async () => {
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(undefined);
+      const vaultProcess = jest.spyOn(vault, 'process');
+
+      expect(await sut.catchUpOnStartup(settings)).toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
     });
   });
 });

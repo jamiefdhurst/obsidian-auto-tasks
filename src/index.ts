@@ -85,9 +85,20 @@ export default class AutoTasks extends Plugin {
     // Copy tasks over when a new daily/weekly note is created
     this.registerEvent(
       this.app.vault.on('create', (file) => {
-        void this.tasks.checkAndCopyTasks(this.settings, file);
+        void this.tasks.checkAndCopyTasks(this.settings, file).then((carried) => {
+          if (carried) {
+            return this.updateSettings(this.settings);
+          }
+        });
       })
     );
+
+    // The core Daily Notes plugin can create today's note while the workspace
+    // is still loading, before the listener above exists - catch that note up
+    // now rather than leaving it without its carried over tasks
+    if (await this.tasks.catchUpOnStartup(this.settings)) {
+      await this.updateSettings(this.settings);
+    }
 
     // Initialize the kanban provider and perform migration if needed
     await this.kanban.initialize();
@@ -144,7 +155,12 @@ export default class AutoTasks extends Plugin {
   async loadSettings(): Promise<void> {
     // loadData() is typed as any, so narrow it before merging over the defaults
     const savedSettings = (await this.loadData()) as Partial<ISettings> | null;
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedSettings);
+    // The periodicity settings are nested, so a shallow merge would alias the
+    // shared DEFAULT_SETTINGS objects and then write to them
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, savedSettings, {
+      daily: Object.assign({}, DEFAULT_SETTINGS.daily, savedSettings?.daily),
+      weekly: Object.assign({}, DEFAULT_SETTINGS.weekly, savedSettings?.weekly),
+    });
   }
 
   async updateSettings(settings: ISettings): Promise<void> {
