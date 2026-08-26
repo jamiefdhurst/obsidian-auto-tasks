@@ -10,6 +10,7 @@ export interface IPeriodicitySettings {
 
 export interface ISettings {
   carryOverPrefix: string;
+  carryOverStatus: string;
   kanbanSync: boolean;
   kanbanFile: string;
   kanbanIgnoreFolders: string[];
@@ -22,6 +23,7 @@ export interface ISettings {
 
 export const DEFAULT_SETTINGS: ISettings = Object.freeze({
   carryOverPrefix: '',
+  carryOverStatus: '',
   kanbanSync: false,
   kanbanFile: '',
   kanbanIgnoreFolders: [],

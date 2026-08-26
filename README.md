@@ -11,6 +11,7 @@ This plugin works well with the [Auto Periodic Notes](https://github.com/jamiefd
 ## Features
 
 - Reads tasks from previous periodic notes and carries over any incomplete ones
+- Optionally marks the carried over tasks in the note they came from, so they stop reading as outstanding
 - Adds the header for tasks when creating the note
 - Searches all or specific headers within the periodic note so you can separate a daily list from other areas
 - Adds a due date to copied tasks so they can be appropriately tracked in the Tasks plugin
@@ -25,6 +26,28 @@ For daily and weekly notes, if you maintain a task list within your periodic not
 The new header for tasks will be added to the end of the new note, with any tasks added under that header.
 
 YTou can specify in the settings whether to search through the whole note for all tasks, or to restrict your search to specific headers (e.g. `## TODOs` in the example above).
+
+Only a plain, untouched checkbox is carried over. Tasks that are complete (`[x]`), not needed (`[n]`) or carry any other custom status are left where they are.
+
+#### Marking the previous note
+
+By default the previous note is left exactly as it was, which means a carried over task appears as outstanding in both notes and shows up twice in queries such as Dataview. Setting a carry over status changes that - once a task has been copied forward, the copy in the previous note has its status character rewritten:
+
+```markdown
+<!-- Yesterday, before -->
+
+- [ ] Write the release notes
+
+<!-- Yesterday, after, with a carry over status of ">" -->
+
+- [>] Write the release notes
+
+<!-- Today -->
+
+- [ ] Write the release notes
+```
+
+Any single character other than a digit can be used - `>` to mark the task as forwarded, or `x` to complete it outright. Only the status character changes; the rest of the line, including any due dates, priorities and other metadata, is left untouched.
 
 ### Due date support
 
@@ -41,6 +64,8 @@ All the tasks within the periodic notes and elsewhere in the vault can be collat
 ![Example of Settings screen within Obsidian](/docs/settings.png)
 
 The plugin supports working with both daily and weekly notes. If you have the Periodic Notes plugin installed, only the note types you have enabled there appear; without it, both are available. For each type of note you can choose to carry over your daily tasks, whether to automatically add any tasks from anywhere in your vault that are due either that day or week, and how to read the tasks from your existing periodic note.
+
+Under "All tasks" you can set a prefix to add to each carried over task, and the status character to write back into the previous note for tasks that have been carried forward. Leave the status blank to leave your previous notes untouched.
 
 When the Kanban plugin is available, you can choose to sync all of the tasks within your vault automatically to a board, which will be created for you.
 

@@ -8,3 +8,5 @@ export const STATUS_NOT_NEEDED: string = 'n';
 export const STATUS_CHAR: string = String.raw`[^\d\]]`;
 export const TASK_LINE: RegExp = new RegExp(String.raw`^\s*-\s\[${STATUS_CHAR}\](?:\s|$)`);
 export const TASK_STATUS: RegExp = new RegExp(String.raw`^\s*-\s\[(${STATUS_CHAR})\](?:\s|$)`);
+export const TASK_CHECKBOX: RegExp = new RegExp(String.raw`^(\s*-\s)\[${STATUS_CHAR}\](?=\s|$)`);
+export const VALID_STATUS: RegExp = new RegExp(String.raw`^${STATUS_CHAR}$`);

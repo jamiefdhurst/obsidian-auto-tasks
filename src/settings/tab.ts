@@ -68,6 +68,11 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
           desc: 'The prefix to add to any carried over tasks, e.g. "[>]".',
           control: { type: 'text', key: 'carryOverPrefix' },
         },
+        {
+          name: 'Mark carried over tasks in previous note as',
+          desc: 'The status character to write back into the previous note for each task that has been carried forward, e.g. ">" for forwarded or "x" for complete. Leave this blank to leave the previous note untouched.',
+          control: { type: 'text', key: 'carryOverStatus' },
+        },
       ],
     });
 

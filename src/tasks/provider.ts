@@ -1,4 +1,4 @@
-import { moment, TAbstractFile } from 'obsidian';
+import { moment, TAbstractFile, TFile } from 'obsidian';
 import { DailyNote, PeriodicNote, WeeklyNote } from 'obsidian-periodic-notes-provider';
 import { DUE, PROGRESS, UPCOMING } from '../kanban/board';
 import { KanbanProvider } from '../kanban/provider';
@@ -6,6 +6,7 @@ import debug from '../log';
 import { IPeriodicitySettings, ISettings } from '../settings';
 import { ObsidianVault } from '../types';
 import { TaskFactory } from './factory';
+import { TASK_CHECKBOX, VALID_STATUS } from './status';
 import { Task } from './task';
 
 export class TasksProvider {
@@ -63,6 +64,11 @@ export class TasksProvider {
         task.setIndentLevel(0);
       }
 
+      // Record the original lines now, before any tasks pulled in from the
+      // Kanban board are added below - those live in other files and must not
+      // be touched when the previous note is marked up
+      const carriedOverLines: Set<string> = this.collectLines(tasksToAdd);
+
       // Find any tasks that are due elsewhere in other files, pull these from the central board
       if (settings.tasksAvailable && settings.kanbanSync && periodicitySetting.addDue) {
         const board = await this.kanban.getBoard();
@@ -97,6 +103,55 @@ export class TasksProvider {
 
         return `${contents}\n\n${periodicitySetting.header}\n\n${tasksToAdd.join('\n')}`;
       });
+
+      // Mark the tasks that have just been carried forward in the note they
+      // came from, so they stop reading as outstanding in queries elsewhere
+      if (previousEntry !== undefined) {
+        await this.markCarriedOverTasks(settings, previousEntry, carriedOverLines);
+      }
     }
+  }
+
+  // The raw source line of every task being carried over, including the nested
+  // children that survived filtering - these are matched verbatim so that only
+  // the status character of a line is ever rewritten
+  private collectLines(tasks: Task[]): Set<string> {
+    const lines: Set<string> = new Set();
+    for (const task of tasks) {
+      lines.add(task.getLine());
+      for (const line of this.collectLines(task.getChildren())) {
+        lines.add(line);
+      }
+    }
+
+    return lines;
+  }
+
+  private async markCarriedOverTasks(
+    settings: ISettings,
+    previousEntry: TFile,
+    carriedOverLines: Set<string>
+  ): Promise<void> {
+    if (!settings.carryOverStatus.trim() || carriedOverLines.size === 0) {
+      return;
+    }
+
+    const status = settings.carryOverStatus.trim().charAt(0);
+    if (!VALID_STATUS.test(status)) {
+      debug(`Ignoring invalid carry over status "${settings.carryOverStatus}"`);
+      return;
+    }
+
+    debug(
+      `Marking ${carriedOverLines.size} carried over tasks as [${status}] in the previous note`
+    );
+    await this.vault.process(previousEntry, (contents) =>
+      contents
+        .split('\n')
+        .map((line) =>
+          carriedOverLines.has(line) ? line.replace(TASK_CHECKBOX, `$1[${status}]`) : line
+        )
+        .join('\n')
+    );
   }
 }
