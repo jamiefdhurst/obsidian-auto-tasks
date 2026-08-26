@@ -318,7 +318,7 @@ describe('Emoji task collection', () => {
       expect(tasks[0].getChildren()[0].getDueDate()).toEqual('2024-01-02');
     });
 
-    it('filters incomplete children correctly', () => {
+    it('filters non-open children correctly', () => {
       sut = new EmojiTaskCollection(
         '## Header 1\n\n- [ ] Parent task\n\t- [x] Complete child\n\t- [ ] Incomplete child\n'
       );
@@ -327,13 +327,13 @@ describe('Emoji task collection', () => {
       const parent = tasks[0];
       expect(parent.getChildren().length).toEqual(2);
 
-      parent.filterIncompleteChildren();
+      parent.filterNonOpenChildren();
 
       expect(parent.getChildren().length).toEqual(1);
       expect(parent.getChildren()[0].getName()).toEqual('Incomplete child');
     });
 
-    it('filters incomplete children recursively', () => {
+    it('filters non-open children recursively', () => {
       sut = new EmojiTaskCollection(
         '## Header 1\n\n- [ ] Parent\n\t- [ ] Child\n\t\t- [x] Complete grandchild\n\t\t- [ ] Incomplete grandchild\n'
       );
@@ -341,7 +341,7 @@ describe('Emoji task collection', () => {
       const tasks = sut.getAllTasks();
       const parent = tasks[0];
 
-      parent.filterIncompleteChildren();
+      parent.filterNonOpenChildren();
 
       expect(parent.getChildren()[0].getChildren().length).toEqual(1);
       expect(parent.getChildren()[0].getChildren()[0].getName()).toEqual('Incomplete grandchild');
@@ -487,7 +487,7 @@ describe('Emoji task collection', () => {
       expect(tasks[0].getDueDate()).toEqual('2024-01-01');
     });
 
-    it('filters not-needed children correctly', () => {
+    it('filters not-needed children out', () => {
       sut = new EmojiTaskCollection(
         '## Header 1\n\n- [ ] Parent task\n\t- [n] Not needed child\n\t- [ ] Normal child\n'
       );
@@ -496,13 +496,13 @@ describe('Emoji task collection', () => {
       const parent = tasks[0];
       expect(parent.getChildren().length).toEqual(2);
 
-      parent.filterNotNeededChildren();
+      parent.filterNonOpenChildren();
 
       expect(parent.getChildren().length).toEqual(1);
       expect(parent.getChildren()[0].getName()).toEqual('Normal child');
     });
 
-    it('filters not-needed children recursively', () => {
+    it('filters not-needed children out recursively', () => {
       sut = new EmojiTaskCollection(
         '## Header 1\n\n- [ ] Parent\n\t- [ ] Child\n\t\t- [n] Not needed grandchild\n\t\t- [ ] Normal grandchild\n'
       );
@@ -510,7 +510,7 @@ describe('Emoji task collection', () => {
       const tasks = sut.getAllTasks();
       const parent = tasks[0];
 
-      parent.filterNotNeededChildren();
+      parent.filterNonOpenChildren();
 
       expect(parent.getChildren()[0].getChildren().length).toEqual(1);
       expect(parent.getChildren()[0].getChildren()[0].getName()).toEqual('Normal grandchild');
@@ -623,6 +623,79 @@ describe('Emoji task collection', () => {
 
       const result = sut.toString();
       expect(result).not.toContain('%%origin:');
+    });
+  });
+
+  describe('custom statuses', () => {
+    it('parses a custom status as an open-but-not-carryable task', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [>] Forwarded task\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('Forwarded task');
+      expect(tasks[0].getStatus()).toEqual('>');
+      expect(tasks[0].isOpen()).toBe(false);
+      expect(tasks[0].isComplete()).toBe(false);
+      expect(tasks[0].isNotNeeded()).toBe(false);
+    });
+
+    it('reports plain, complete and not-needed statuses', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Open\n- [x] Complete\n- [n] Not needed\n- [/] In progress\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.map((t) => t.getStatus())).toEqual([' ', 'x', 'n', '/']);
+      expect(tasks.map((t) => t.isOpen())).toEqual([true, false, false, false]);
+    });
+
+    it('preserves a custom status when rendering back out', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [>] Forwarded task 📅 2024-01-01\n');
+
+      expect(sut.toString()).toContain('- [>] Forwarded task 📅 2024-01-01');
+    });
+
+    it('keeps metadata and origins on a custom status task', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [>] Task 1 📅 2024-01-01 %%origin:file1.md%%\n'
+      );
+
+      const tasks = sut.getAllTasks();
+      expect(tasks[0].getName()).toEqual('Task 1');
+      expect(tasks[0].getDueDate()).toEqual('2024-01-01');
+      expect(tasks[0].getOrigins()).toEqual(['file1.md']);
+    });
+
+    it('exposes the original line', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n\t- [>] Forwarded task\n');
+
+      expect(sut.getAllTasks()[0].getLine()).toEqual('\t- [>] Forwarded task');
+    });
+
+    it('does not treat a numeric reference as a task', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [1] Not a task\n- [ ] A real task\n');
+
+      const tasks = sut.getAllTasks();
+      expect(tasks.length).toEqual(1);
+      expect(tasks[0].getName()).toEqual('A real task');
+    });
+
+    it('does not treat a wiki link as a task', () => {
+      sut = new EmojiTaskCollection('## Header 1\n\n- [[Some note]]\n');
+
+      expect(sut.getAllTasks().length).toEqual(0);
+    });
+
+    it('filters custom status children out of a carried over task', () => {
+      sut = new EmojiTaskCollection(
+        '## Header 1\n\n- [ ] Parent task\n\t- [>] Forwarded child\n\t- [ ] Open child\n'
+      );
+
+      const parent = sut.getAllTasks()[0];
+      parent.filterNonOpenChildren();
+
+      expect(parent.getChildren().length).toEqual(1);
+      expect(parent.getChildren()[0].getName()).toEqual('Open child');
     });
   });
 });

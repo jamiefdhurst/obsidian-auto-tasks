@@ -87,6 +87,17 @@ export class KanbanSynchroniser {
       }
 
       const existingTask = kanbanTasks.getTask(task);
+
+      // A task carrying a custom status - such as one marked [>] when it was
+      // carried over - still contributes its origin, but must never push that
+      // status onto the board or create a card of its own
+      if (!task.isOpen() && !task.isComplete()) {
+        if (existingTask && file.path) {
+          existingTask.addOrigin(file.path);
+        }
+        continue;
+      }
+
       if (!existingTask) {
         kanbanTasks.add(task);
       } else {

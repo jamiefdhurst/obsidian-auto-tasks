@@ -1,11 +1,20 @@
 import { TFile } from 'obsidian';
 import debug from '../log';
+import { STATUS_CHAR } from '../tasks/status';
 import { Task } from '../tasks/task';
 import { ObsidianVault } from '../types';
 import { TaskOriginIndex } from './origin-index';
 
 const TASK_CHECKBOX_INCOMPLETE: RegExp = /^(\s*-\s)\[ \]/;
 const TASK_CHECKBOX_COMPLETE: RegExp = /^(\s*-\s)\[x\]/;
+// Locating a task is deliberately looser than toggling it - a task with a
+// custom status such as [>] must still be findable, but only plain [ ] and [x]
+// checkboxes are ever rewritten
+const TASK_ANY_CHECKBOX: RegExp = new RegExp(String.raw`^\s*-\s\[${STATUS_CHAR}\]`);
+const TASK_LINE_NAME: RegExp = new RegExp(
+  String.raw`^\s*-\s\[${STATUS_CHAR}\]\s+(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|\s\[[A-Za-z]+::|%%origin:|$)`,
+  'u'
+);
 
 export interface TaskCompletionChange {
   taskName: string;
@@ -90,12 +99,10 @@ export class ReverseKanbanSynchroniser {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       // Check if this is a task line and contains the task name
-      if (line.match(/^\s*-\s\[[x\s]\]/) && line.includes(taskName)) {
+      if (line.match(TASK_ANY_CHECKBOX) && line.includes(taskName)) {
         // Extract the task name from the line to do an exact match
         // The name is between the checkbox and any metadata
-        const nameMatch = line.match(
-          /^\s*-\s\[[x\s]\]\s+(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|\s\[[A-Za-z]+::|%%origin:|$)/u
-        );
+        const nameMatch = line.match(TASK_LINE_NAME);
         if (nameMatch && nameMatch[1].trim() === taskName) {
           return i;
         }

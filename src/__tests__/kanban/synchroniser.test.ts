@@ -312,4 +312,41 @@ describe('kanban synchroniser', () => {
     expect(board.toString()).toContain('- [ ] A new task');
     expect(board.toString()).not.toContain('Not needed task');
   });
+
+  it('does not create a card for a task carrying a custom status', async () => {
+    const file1 = new TFile();
+    file1.name = 'file1.md';
+    file1.path = 'file1.md';
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValue('## TODOs\n\n- [ ] A new task\n- [>] A carried over task\n');
+
+    await sut.process(board, [file1]);
+
+    expect(board.getTaskCollection().getAllTasks().length).toEqual(1);
+    expect(board.toString()).toContain('- [ ] A new task');
+    expect(board.toString()).not.toContain('A carried over task');
+  });
+
+  it('records the origin of a task carrying a custom status against the existing card', async () => {
+    const file1 = new TFile();
+    file1.name = 'file1.md';
+    file1.path = 'file1.md';
+    const file2 = new TFile();
+    file2.name = 'file2.md';
+    file2.path = 'file2.md';
+    board = new KanbanBoard(taskFactory, BOARD_FILENAME);
+    jest
+      .spyOn(vault, 'read')
+      .mockResolvedValueOnce('## TODOs\n\n- [ ] Shared task\n')
+      .mockResolvedValueOnce('## TODOs\n\n- [>] Shared task\n');
+
+    await sut.process(board, [file1, file2]);
+
+    expect(board.getTaskCollection().getAllTasks().length).toEqual(1);
+    expect(board.toString()).toContain('- [ ] Shared task');
+    expect(board.toString()).toContain('%%origin:file1.md%%');
+    expect(board.toString()).toContain('%%origin:file2.md%%');
+  });
 });

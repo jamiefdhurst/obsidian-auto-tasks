@@ -544,4 +544,139 @@ describe('tasks provider', () => {
       expect(result).not.toContain('Not needed child 2');
     });
   });
+
+  describe('marking carried over tasks in the previous note', () => {
+    const PREVIOUS =
+      '## TODOs\n\n- [x] Complete 1\n- [ ] Incomplete 1\n\t- [ ] Child 1\n\t- [x] Child 2\n- [n] Not needed 1\n- [ ] Incomplete 2';
+
+    let previousFile: TFile;
+    let currentFile: TFile;
+    let processed: Map<TFile, string>;
+
+    beforeEach(() => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      previousFile = new TFile();
+      currentFile = new TFile();
+      processed = new Map<TFile, string>();
+
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest.spyOn(dailyNote, 'getPrevious').mockReturnValue(previousFile);
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      jest.spyOn(vault, 'read').mockResolvedValue(PREVIOUS);
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => {
+        const result = fn(file === previousFile ? PREVIOUS : '');
+        processed.set(file, result);
+        return Promise.resolve(result);
+      });
+    });
+
+    it('leaves the previous note untouched when no status is configured', async () => {
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.has(previousFile)).toBe(false);
+    });
+
+    it('leaves the previous note untouched when the status is only whitespace', async () => {
+      settings.carryOverStatus = '   ';
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.has(previousFile)).toBe(false);
+    });
+
+    it('marks carried over tasks and their carried children', async () => {
+      settings.carryOverStatus = '>';
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.get(previousFile)).toEqual(
+        '## TODOs\n\n- [x] Complete 1\n- [>] Incomplete 1\n\t- [>] Child 1\n\t- [x] Child 2\n- [n] Not needed 1\n- [>] Incomplete 2'
+      );
+    });
+
+    it('accepts a status of x to complete the tasks instead', async () => {
+      settings.carryOverStatus = 'x';
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.get(previousFile)).toContain('- [x] Incomplete 1');
+      expect(processed.get(previousFile)).toContain('- [x] Incomplete 2');
+    });
+
+    it('uses only the first character of the configured status', async () => {
+      settings.carryOverStatus = '>>';
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.get(previousFile)).toContain('- [>] Incomplete 1');
+    });
+
+    it('ignores an invalid status', async () => {
+      settings.carryOverStatus = '1';
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.has(previousFile)).toBe(false);
+    });
+
+    it('preserves metadata on the lines it marks', async () => {
+      settings.carryOverStatus = '>';
+      const previous = '## TODOs\n\n- [ ] Incomplete 1 📅 2024-01-01 %%origin:file1.md%%';
+      jest.spyOn(vault, 'read').mockResolvedValue(previous);
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => {
+        const result = fn(file === previousFile ? previous : '');
+        processed.set(file, result);
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.get(previousFile)).toEqual(
+        '## TODOs\n\n- [>] Incomplete 1 📅 2024-01-01 %%origin:file1.md%%'
+      );
+    });
+
+    it('does not carry the marked tasks a second time', async () => {
+      settings.carryOverStatus = '>';
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      // Feed the note back in as it now stands - nothing is left to carry
+      const marked = processed.get(previousFile) as string;
+      processed.clear();
+      jest.spyOn(vault, 'read').mockResolvedValue(marked);
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => {
+        const result = fn(file === previousFile ? marked : '');
+        processed.set(file, result);
+        return Promise.resolve(result);
+      });
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.get(currentFile)).toEqual('\n\n## Daily TODOs\n\n');
+      expect(processed.has(previousFile)).toBe(false);
+    });
+
+    it('does not mark tasks that were pulled in from the Kanban board', async () => {
+      settings.carryOverStatus = '>';
+      settings.tasksAvailable = true;
+      settings.kanbanSync = true;
+      settings.daily.addDue = true;
+      jest.spyOn(dailyNote, 'getNextDate').mockReturnValue(moment('2024-01-02'));
+      const board = new KanbanBoard(
+        taskFactory,
+        'Board.md',
+        `${UPCOMING}\n\n- [ ] Due elsewhere 📅 2024-01-01\n\n${DUE}\n\n\n\n${PROGRESS}\n\n\n\n${DONE}\n\n\n\n`
+      );
+      jest.spyOn(kanban, 'getBoard').mockResolvedValue(board);
+
+      await sut.checkAndCopyTasks(settings, new TFile());
+
+      expect(processed.get(currentFile)).toContain('- [ ] Due elsewhere');
+      expect(processed.get(previousFile)).not.toContain('Due elsewhere');
+      expect(processed.get(previousFile)).toContain('- [>] Incomplete 1');
+    });
+  });
 });

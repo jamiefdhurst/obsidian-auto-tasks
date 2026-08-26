@@ -1,11 +1,13 @@
 import { moment } from 'obsidian';
+import { STATUS_CHAR } from './status';
 import { DUE_DATE_FORMAT, Task } from './task';
 
 const METADATA_CHARS: string = '📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅';
-const TASK_COMPLETE: RegExp = /^\s*-\s\[x\]/;
-const TASK_NOT_NEEDED: RegExp = /^\s*-\s\[n\]/;
 const TASK_DUE_DATE: RegExp = /\s📅\s(\d{4}-\d{2}-\d{2})/;
-const TASK_NAME: RegExp = /^\s*(-\s\[[xn\s]\]\s)(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|$)/u;
+const TASK_NAME: RegExp = new RegExp(
+  String.raw`^\s*(-\s\[${STATUS_CHAR}\]\s)(.*?)(?:\s[📅🛫⏳⏫🔼🔽🔺⏬🆔⛔🔁➕✅]|$)`,
+  'u'
+);
 const TASK_ORIGINS: RegExp = /%%origin:(.*?)%%/g;
 
 export class EmojiTask extends Task {
@@ -53,8 +55,7 @@ export class EmojiTask extends Task {
       this.metadata = lineWithoutIndent.replace(matched[1] + matched[2], '');
     }
 
-    this.complete = !!this.line.match(TASK_COMPLETE);
-    this.notNeeded = !!this.line.match(TASK_NOT_NEEDED);
+    this.parseStatus();
     this.parseCarriedOver();
     this.parseOrigins();
   }
@@ -76,7 +77,7 @@ export class EmojiTask extends Task {
     }
 
     const originsStr = this.buildOriginsString();
-    return `${indent}- [${this.getCompleteChar()}] ${this.getCarriedOverPrefix()}${this.name}${metadata}${originsStr}${this.buildChildrenString()}`;
+    return `${indent}- [${this.getStatusChar()}] ${this.getCarriedOverPrefix()}${this.name}${metadata}${originsStr}${this.buildChildrenString()}`;
   }
 
   protected buildOriginsString(): string {
