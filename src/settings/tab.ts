@@ -65,12 +65,12 @@ export class AutoTasksSettingsTab extends PluginSettingTab {
       items: [
         {
           name: 'Prefix for carried over tasks',
-          desc: 'Text to add to the start of each carried over task in the new note, before the task name, e.g. "[<]" to show that it came from an earlier note. Leave this blank to add nothing.',
+          desc: 'Text added in front of the task name in the new note. Whatever you enter is used as-is: entering "[<]" turns "- [ ] Buy milk" into "- [ ] [<] Buy milk". Leave this blank to add nothing.',
           control: { type: 'text', key: 'carryOverPrefix' },
         },
         {
           name: 'Mark carried over tasks in previous note as',
-          desc: 'The single character to write into the checkbox of each carried over task in the note it came from, e.g. ">" to mark it as forwarded or "x" to complete it. Leave this blank to leave the previous note untouched.',
+          desc: 'A single character, written inside the checkbox in the previous note. Entering ">" turns "- [ ] Buy milk" into "- [>] Buy milk" there. Leave this blank to leave the previous note untouched.',
           control: { type: 'text', key: 'carryOverStatus' },
         },
       ],
