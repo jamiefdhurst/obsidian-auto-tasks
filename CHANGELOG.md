@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2026-08-26
+
+### Fixed
+
+- fix: honour core Daily Notes and Calendar when resolving availability (58b92ce)
+- fix: carry over into notes created before the listener is registered (22fc606)
+- (4aff0fc)
+
 ## [0.11.0] - 2026-08-26
 
 ### Added
@@ -26,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - chore: resolve dependabot security alerts (6778039)
 - (090b978)
+- [skip ci] Update version to v0.11.0 (8a81f09)
 
 ### Testing
 
