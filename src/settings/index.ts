@@ -6,6 +6,7 @@ export interface IPeriodicitySettings {
   carryOver: boolean;
   header: string;
   lastCarriedOver: string;
+  lastCarriedOverAt: number;
   searchHeaders: string[];
 }
 
@@ -37,6 +38,7 @@ export const DEFAULT_SETTINGS: ISettings = Object.freeze({
     carryOver: false,
     header: '## TODOs',
     lastCarriedOver: '',
+    lastCarriedOverAt: 0,
     searchHeaders: [],
   },
   weekly: {
@@ -45,6 +47,7 @@ export const DEFAULT_SETTINGS: ISettings = Object.freeze({
     carryOver: false,
     header: '## TODOs',
     lastCarriedOver: '',
+    lastCarriedOverAt: 0,
     searchHeaders: [],
   },
 });

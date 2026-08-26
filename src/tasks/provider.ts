@@ -96,8 +96,10 @@ export class TasksProvider {
       }
 
       // Never carry into the same note twice - the create event can fire more
-      // than once, and a catch-up must not repeat what the event already did
-      if (newNote.path && periodicitySetting.lastCarriedOver === newNote.path) {
+      // than once, and a catch-up must not repeat what the event already did.
+      // The creation time is part of the comparison so that deleting a note and
+      // making it again is treated as a new note rather than one already done
+      if (this.hasAlreadyCarriedOver(periodicitySetting, newNote)) {
         debug(`Tasks have already been carried over into ${newNote.path}, skipping`);
         return false;
       }
@@ -175,11 +177,27 @@ export class TasksProvider {
       }
 
       periodicitySetting.lastCarriedOver = newNote.path;
+      periodicitySetting.lastCarriedOverAt = newNote.stat?.ctime ?? 0;
 
       return true;
     }
 
     return false;
+  }
+
+  private hasAlreadyCarriedOver(periodicitySetting: IPeriodicitySettings, note: TFile): boolean {
+    if (!note.path || periodicitySetting.lastCarriedOver !== note.path) {
+      return false;
+    }
+
+    // A note with no creation time cannot be told apart from a replacement, so
+    // fall back to the path alone rather than carrying over repeatedly
+    const created = note.stat?.ctime;
+    if (created === undefined) {
+      return true;
+    }
+
+    return periodicitySetting.lastCarriedOverAt === created;
   }
 
   private wasCreatedRecently(note: TFile): boolean {

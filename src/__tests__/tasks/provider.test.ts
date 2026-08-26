@@ -847,4 +847,62 @@ describe('tasks provider', () => {
       await expect(sut.catchUpOnStartup(settings)).resolves.toBe(false);
     });
   });
+
+  describe('recreated notes', () => {
+    const noteAt = (path: string, ctime: number): TFile => {
+      const file = new TFile();
+      file.path = path;
+      file.stat = { ctime, mtime: ctime, size: 0 };
+      return file;
+    };
+
+    beforeEach(() => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+      jest.spyOn(vault, 'read').mockResolvedValue('## TODOs\n\n- [ ] Incomplete 1');
+      jest.spyOn(dailyNote, 'getPrevious').mockReturnValue(new TFile());
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => Promise.resolve(fn('')));
+    });
+
+    it('carries over again when a note is deleted and recreated at the same path', async () => {
+      const original = noteAt('Daily/2026-08-26.md', 1000);
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(original);
+      expect(await sut.checkAndCopyTasks(settings, original)).toBe(true);
+
+      // Same path, but made again - a different note as far as this is concerned
+      const recreated = noteAt('Daily/2026-08-26.md', 2000);
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(recreated);
+
+      expect(await sut.checkAndCopyTasks(settings, recreated)).toBe(true);
+      expect(settings.daily.lastCarriedOverAt).toEqual(2000);
+    });
+
+    it('still skips a repeated event for the very same note', async () => {
+      const note = noteAt('Daily/2026-08-26.md', 1000);
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(note);
+
+      expect(await sut.checkAndCopyTasks(settings, note)).toBe(true);
+      expect(await sut.checkAndCopyTasks(settings, note)).toBe(false);
+    });
+
+    it('falls back to the path when the note has no creation time', async () => {
+      const note = new TFile();
+      note.path = 'Daily/2026-08-26.md';
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(note);
+
+      expect(await sut.checkAndCopyTasks(settings, note)).toBe(true);
+      expect(await sut.checkAndCopyTasks(settings, note)).toBe(false);
+    });
+
+    it('carries over into a different note at a different path', async () => {
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(noteAt('Daily/2026-08-26.md', 1000));
+      expect(await sut.checkAndCopyTasks(settings, new TFile())).toBe(true);
+
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(noteAt('Daily/2026-08-27.md', 3000));
+      expect(await sut.checkAndCopyTasks(settings, new TFile())).toBe(true);
+      expect(settings.daily.lastCarriedOver).toEqual('Daily/2026-08-27.md');
+    });
+  });
 });
