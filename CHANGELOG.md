@@ -5,12 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.3] - 2026-08-26
+
+### Fixed
+
+- fix: carry over again when a note is deleted and recreated (e3b7081)
+- (9e06230)
+
+### Other
+
+- chore: log what carry over found and why it was empty (c9f2ec3)
+
 ## [0.11.2] - 2026-08-26
 
 ### Fixed
 
 - fix: handle a missing periodic note without throwing (4f73bcf)
 - (cfeada6)
+
+### Other
+
+- [skip ci] Update version to v0.11.2 (1c43962)
 
 ## [0.11.1] - 2026-08-26
 
