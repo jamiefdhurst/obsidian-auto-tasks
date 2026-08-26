@@ -788,4 +788,63 @@ describe('tasks provider', () => {
       expect(vaultProcess).not.toHaveBeenCalled();
     });
   });
+
+  describe('missing notes', () => {
+    // The periodic note lookup is typed as returning TFile | undefined but
+    // actually hands back null when there is no note for the period
+    const returnsNoNote = () => jest.fn().mockReturnValue(null);
+
+    beforeEach(() => {
+      settings.daily.available = true;
+      settings.daily.carryOver = true;
+      settings.daily.header = '## Daily TODOs';
+    });
+
+    it('does not throw on startup when there is no current note', async () => {
+      dailyNote.getCurrent = returnsNoNote();
+      const vaultProcess = jest.spyOn(vault, 'process');
+
+      await expect(sut.catchUpOnStartup(settings)).resolves.toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
+    });
+
+    it('does not throw on create when there is no current note', async () => {
+      dailyNote.getCurrent = returnsNoNote();
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      const vaultProcess = jest.spyOn(vault, 'process');
+
+      await expect(sut.checkAndCopyTasks(settings, new TFile())).resolves.toBe(false);
+      expect(vaultProcess).not.toHaveBeenCalled();
+    });
+
+    it('adds the header without reading when there is no previous note', async () => {
+      const currentFile = new TFile();
+      currentFile.path = 'Daily/2026-08-26.md';
+      jest.spyOn(dailyNote, 'getCurrent').mockReturnValue(currentFile);
+      dailyNote.getPrevious = returnsNoNote();
+      jest.spyOn(dailyNote, 'isValid').mockReturnValue(true);
+      const vaultRead = jest.spyOn(vault, 'read');
+      let result;
+      jest.spyOn(vault, 'process').mockImplementation((file, fn) => {
+        result = fn('');
+        return Promise.resolve(result);
+      });
+
+      await expect(sut.checkAndCopyTasks(settings, currentFile)).resolves.toBe(true);
+
+      expect(vaultRead).not.toHaveBeenCalled();
+      expect(result).toEqual('\n\n## Daily TODOs\n\n');
+    });
+
+    it('does not throw when both the current and previous notes are missing', async () => {
+      settings.weekly.available = true;
+      settings.weekly.carryOver = true;
+      weeklyNote.getCurrent = returnsNoNote();
+      weeklyNote.getPrevious = returnsNoNote();
+      weeklyNote.isValid = jest.fn().mockReturnValue(false);
+      dailyNote.getCurrent = returnsNoNote();
+
+      await expect(sut.catchUpOnStartup(settings)).resolves.toBe(false);
+    });
+  });
 });

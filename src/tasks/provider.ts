@@ -86,8 +86,11 @@ export class TasksProvider {
     cls: PeriodicNote
   ): Promise<boolean> {
     if (periodicitySetting.available && periodicitySetting.carryOver) {
+      // The periodic note lookup is typed as returning TFile | undefined but
+      // actually returns null when there is no note for the period, so every
+      // result from it has to be checked for both
       const newNote = cls.getCurrent();
-      if (newNote === undefined) {
+      if (!newNote) {
         debug('No current note to copy tasks into, skipping');
         return false;
       }
@@ -111,8 +114,9 @@ export class TasksProvider {
       // Get the previous entry - there may not be one, in which case there is
       // nothing to carry over, though due tasks can still apply below
       const previousEntry = cls.getPrevious();
-      const previousEntryContents: string =
-        previousEntry !== undefined ? await this.vault.read(previousEntry) : '';
+      const previousEntryContents: string = previousEntry
+        ? await this.vault.read(previousEntry)
+        : '';
       const tasks: Task[] = this.factory
         .newCollection(previousEntryContents)
         .getTasksFromLists(periodicitySetting.searchHeaders);
@@ -166,7 +170,7 @@ export class TasksProvider {
 
       // Mark the tasks that have just been carried forward in the note they
       // came from, so they stop reading as outstanding in queries elsewhere
-      if (previousEntry !== undefined) {
+      if (previousEntry) {
         await this.markCarriedOverTasks(settings, previousEntry, carriedOverLines);
       }
 
